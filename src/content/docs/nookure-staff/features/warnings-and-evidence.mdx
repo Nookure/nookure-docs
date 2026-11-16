@@ -27,36 +27,46 @@ To revoke a warning:
 
 ### Warning Categories & Decay
 Warnings are categorized (e.g. `flood`, `spam`, `toxicity`, `cheating`, `general`).
-- Active warnings expire and decay after a configurable duration (default: `decayDuration: 30d`).
+- Active warnings expire and decay after a configurable duration (default: `decay-duration: 30d`).
 - Historical records remain in the database for auditing via `/history <player>`.
 
 ---
 
 ## Auto-Escalation Ladders
 
-In `punishment/config.yml`, server owners can configure automated escalation ladders per warning category. When a player accumulates active warnings within that category, punishments are executed automatically:
+In `plugins/NookureStaff/punishment/config.yml`, server owners can configure automated escalation ladders per warning category. When a player accumulates active warnings within that category, the configured actions are executed automatically:
 
-```yaml title="punishment/config.yml"
+```yaml title="plugins/NookureStaff/punishment/config.yml"
 warn:
+  # Default warning category when none is specified.
+  default-category: general
+
+  # Default duration before warnings expire / decay (e.g. 30d). Old warnings won't count towards category thresholds.
+  decay-duration: 30d
+
   categories:
     toxicity:
-      decayDuration: "30d"
-      escalation:
-        1:
-          action: "WARN_ONLY"
-        2:
-          action: "MUTE"
-          duration: "1h"
-          reason: "Repeated Toxicity (Warning 2)"
-        3:
-          action: "MUTE"
-          duration: "1d"
-          kick: true
-          reason: "Repeated Toxicity (Warning 3)"
-        4:
-          action: "TEMPBAN"
-          duration: "3d"
-          reason: "Excessive Toxicity (Warning 4)"
+      # Human-friendly display name of the category.
+      display-name: Toxic Behavior
+
+      # Material icon used in the template selector GUI.
+      material: POISONOUS_POTATO
+
+      # Default reason for warnings issued under this category.
+      reason: Inappropriate behavior, disrespect or toxicity
+
+      # Map of warn count (e.g. 1, 2, 3...) to a list of sanctions to apply when reaching that count.
+      actions:
+        '1':
+          - tempmute 2h Toxic behavior
+        '2':
+          - tempmute 1d Toxic behavior
+        '3':
+          - tempban 3d Severe toxicity
+        '4':
+          - tempban 14d Severe toxicity
+        '5':
+          - ban Persistent toxicity
 ```
 
 ### Automatic Sanction Rollback on Unwarn

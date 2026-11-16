@@ -82,27 +82,70 @@ warn:
 
 # Mandatory evidence requirement policy by staff tier and sanction type.
 evidence-requirement:
-  # Whether the mandatory evidence policy is enabled.
+  # Whether mandatory evidence policy is enabled.
   enabled: true
+
+  # Task interval in seconds to check for expired evidence deadlines.
+  check-interval-seconds: 30
+
+  # Reminder interval in minutes for online staff members with pending evidence.
+  reminder-interval-minutes: 10
 
   # Configured staff tiers mapped to staff primary groups (obtained via PermissionHook)
   # and their respective evidence deadlines.
   tiers:
-    moderator:
+    admin:
       # Primary group name (e.g. admin, moderator, helper). If omitted, the tier key in configuration is used.
-      group: moderator
+      group: admin
       # Optional list of alias primary groups that also map to this tier.
+      aliases:
+        - owner
+        - developer
+      # Evaluation priority. Higher priority tiers are checked first.
+      priority: 100
+      # Deadlines per sanction type. Formats: "30m", "1h", "24h", or "none"/"-1"/"exempt" for no evidence required.
+      # Valid keys: BAN, TEMP_BAN, IP_BAN, TEMP_IP_BAN, MUTE, TEMP_MUTE, IP_MUTE, TEMP_IP_MUTE, WARN, or default.
+      deadlines:
+        BAN: none
+        TEMP_BAN: none
+        IP_BAN: none
+        TEMP_IP_BAN: none
+        MUTE: none
+        TEMP_MUTE: none
+        IP_MUTE: none
+        TEMP_IP_MUTE: none
+        WARN: none
+    moderator:
+      group: moderator
       aliases:
         - mod
         - seniormod
-      # Evaluation priority. Higher priority tiers are checked first.
       priority: 50
-      # Deadlines per sanction type. Formats: "30m", "1h", "24h", or "none"/"-1"/"exempt" for no evidence required.
       deadlines:
         BAN: 6h
         TEMP_BAN: 6h
+        IP_BAN: 6h
+        TEMP_IP_BAN: 6h
         MUTE: 12h
+        TEMP_MUTE: 12h
+        IP_MUTE: 12h
+        TEMP_IP_MUTE: 12h
         WARN: 24h
+    helper:
+      group: helper
+      aliases:
+        - trialmod
+      priority: 10
+      deadlines:
+        BAN: 1h
+        TEMP_BAN: 1h
+        IP_BAN: 1h
+        TEMP_IP_BAN: 1h
+        MUTE: 2h
+        TEMP_MUTE: 2h
+        IP_MUTE: 2h
+        TEMP_IP_MUTE: 2h
+        WARN: 4h
 
 # If true, backend servers will not attempt to kick the player locally for BAN or KICK sanctions
 # when the server is connected behind a proxy, letting the proxy perform the network-wide disconnection.

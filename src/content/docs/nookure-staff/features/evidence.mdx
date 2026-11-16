@@ -13,20 +13,83 @@ To maintain staff integrity and prevent unjustified sanctions, **NookureStaff+**
 
 ## Mandatory Evidence Policy
 
-NookureStaff+ enforces a configurable **Mandatory Evidence Policy** (`evidenceRequirement`) in `plugins/NookureStaff/punishment/config.yml`:
+NookureStaff+ enforces a configurable **Mandatory Evidence Policy** (`evidence-requirement`) in `plugins/NookureStaff/punishment/config.yml`:
 
 1. **Staff Tier Deadlines**:
-   Evidence deadlines are mapped to staff ranks using LuckPerms primary groups:
-   ```yaml title="punishment/config.yml"
-   evidenceRequirement:
+   Evidence deadlines are mapped to staff ranks using `PermissionHook` (LuckPerms primary groups) and `aliases`, evaluated by `priority` (highest first), with per-sanction-type deadlines (`BAN`, `TEMP_BAN`, `IP_BAN`, `TEMP_IP_BAN`, `MUTE`, `TEMP_MUTE`, `IP_MUTE`, `TEMP_IP_MUTE`, `WARN`, or `default`):
+   ```yaml title="plugins/NookureStaff/punishment/config.yml"
+   # Mandatory evidence requirement policy by staff tier and sanction type.
+   evidence-requirement:
+     # Whether mandatory evidence policy is enabled.
      enabled: true
-     deadlines:
-       helper: "2h"
-       moderator: "6h"
-       admin: "24h"
+
+     # Task interval in seconds to check for expired evidence deadlines.
+     check-interval-seconds: 30
+
+     # Reminder interval in minutes for online staff members with pending evidence.
+     reminder-interval-minutes: 10
+
+     # Configured staff tiers mapped to staff primary groups (obtained via PermissionHook)
+     # and their respective evidence deadlines.
+     tiers:
+       admin:
+         # Primary group name (e.g. admin, moderator, helper). If omitted, the tier key in configuration is used.
+         group: admin
+
+         # Optional list of alias primary groups that also map to this tier.
+         aliases:
+           - owner
+           - developer
+
+         # Evaluation priority. Higher priority tiers are checked first.
+         priority: 100
+
+         # Deadlines per sanction type. Formats: "30m", "1h", "24h", or "none"/"-1"/"exempt" for no evidence required.
+         # Valid keys: BAN, TEMP_BAN, IP_BAN, TEMP_IP_BAN, MUTE, TEMP_MUTE, IP_MUTE, TEMP_IP_MUTE, WARN, or default.
+         deadlines:
+           BAN: none
+           TEMP_BAN: none
+           IP_BAN: none
+           TEMP_IP_BAN: none
+           MUTE: none
+           TEMP_MUTE: none
+           IP_MUTE: none
+           TEMP_IP_MUTE: none
+           WARN: none
+       moderator:
+         group: moderator
+         aliases:
+           - mod
+           - seniormod
+         priority: 50
+         deadlines:
+           BAN: 6h
+           TEMP_BAN: 6h
+           IP_BAN: 6h
+           TEMP_IP_BAN: 6h
+           MUTE: 12h
+           TEMP_MUTE: 12h
+           IP_MUTE: 12h
+           TEMP_IP_MUTE: 12h
+           WARN: 24h
+       helper:
+         group: helper
+         aliases:
+           - trialmod
+         priority: 10
+         deadlines:
+           BAN: 1h
+           TEMP_BAN: 1h
+           IP_BAN: 1h
+           TEMP_IP_BAN: 1h
+           MUTE: 2h
+           TEMP_MUTE: 2h
+           IP_MUTE: 2h
+           TEMP_IP_MUTE: 2h
+           WARN: 4h
    ```
 2. **Reminders**:
-   Staff members with pending sanctions receive automated reminders every 10 minutes prompting them to attach or upload their evidence.
+   Online staff members with pending sanctions receive automated reminders every `reminder-interval-minutes` (default: `10` minutes) prompting them to attach or upload their evidence.
 3. **Automated Invalidation (Auto-Pardon)**:
    If a staff member fails to link evidence before their rank's deadline expires, `EvidenceExpirationTask` automatically pardons the sanction with the reason:
    ```text

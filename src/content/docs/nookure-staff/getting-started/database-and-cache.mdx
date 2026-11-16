@@ -22,36 +22,57 @@ Database credentials and driver settings are defined in the `database` block of 
 <Tabs>
   <TabItem label="SQLite (Single Server)">
     Recommended solely for standalone servers without cross-server requirements.
-    
-    ```yaml title="config.yml"
+
+    ```yaml title="plugins/NookureStaff/config.yml"
     database:
+      # The type of the database.
+      # This can be either MYSQL or SQLITE.
+      # For MariaDB, use MYSQL driver.
       type: SQLITE
-      sqlite:
-        file: "storage.db"
+      host: localhost
+      port: 3306
+      username: nookure
+      password: yourSecurePassword
+      database: database
     ```
-    
-    - The SQLite database file will be created automatically in your plugin data folder.
-    - Automated migrations will execute on boot to create all necessary tables.
+
+    - The SQLite database file (`database.db`) will be created automatically in your plugin data folder.
   </TabItem>
 
   <TabItem label="MySQL / MariaDB (Networks)">
     Required for multi-server networks and Velocity proxy enforcement.
-    
+
     ```yaml title="config.yml & velocity.yml"
     database:
+      # The type of the database.
+      # This can be either MYSQL or SQLITE.
+      # For MariaDB, use MYSQL driver.
+      # ¿When use MYSQL or SQLITE?
+      # - If you have more than 1 server, use MYSQL.
+      # - If you have only 1 server, but you want
+      # to be able to scale, use MYSQL.
       type: MYSQL
-      mysql:
-        host: "127.0.0.1"
-        port: 3306
-        database: "minecraft_network"
-        username: "staff_admin"
-        password: "secure_password_here"
-        ssl: false
-        pool:
-          maximumPoolSize: 10
-          minimumIdle: 2
-          idleTimeout: 30000
-          connectionTimeout: 10000
+
+      # The host of the database.
+      # This can be an IP address or a domain name.
+      # ┏━━━━━━ Pterodactyl Users ━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+      # ┃If you are using pterodactyl, I recommend using the ┃
+      # ┃docker bridge IP address, smth like 172.x.x.x       ┃
+      # ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+      host: localhost
+
+      # The port of the database.
+      # This is usually 3306 for MySQL
+      port: 3306
+
+      # The username of the database.
+      username: nookure
+
+      # The password of the database.
+      password: yourSecurePassword
+
+      # The name of the database.
+      database: database
     ```
   </TabItem>
 </Tabs>

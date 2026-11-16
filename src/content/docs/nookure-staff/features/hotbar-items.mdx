@@ -29,36 +29,44 @@ You can add an unlimited number of custom items to `items.yml` to trigger comman
 
 ### Execution Types
 
-When defining a custom item, set `executionType` to one of the following:
+When defining a custom item, set `type` to one of the following:
 
-- **`COMMAND_AS_PLAYER`**: Runs the command as the staff member executing the action.
-- **`COMMAND_AS_CONSOLE`**: Runs the command via server console (useful for elevated administrative actions).
-- **`COMMAND_TARGET_AS_PLAYER`**: Right-clicking a player replaces `{target}` with the targeted player's username and runs the command as the staff member.
-- **`COMMAND_TARGET_AS_CONSOLE`**: Right-clicking a player replaces `{target}` and executes the command from console.
+- **`COMMAND_AS_PLAYER`**: Runs the command as the player who clicked the item.
+- **`COMMAND_AS_CONSOLE`**: Runs the command as the console.
+- **`COMMAND_TARGET_AS_PLAYER`**: Runs the command as the staff member with `{target}` replaced by the player that was clicked.
+- **`COMMAND_TARGET_AS_CONSOLE`**: Runs the command as the console with `{target}` replaced by the player that was clicked.
 
 ### Example Custom Item Configuration
 
-```yaml title="items.yml"
-customItems:
-  cps_check:
-    slot: 2
-    material: "CLOCK"
-    name: "<yellow>CPS Check</yellow>"
-    lore:
-      - "<gray>Right click a player to check</gray>"
-      - "<gray>their combat telemetry.</gray>"
-    permission: "nookurestaff.item.custom.cps"
-    executionType: COMMAND_TARGET_AS_CONSOLE
-    command: "anticheat cps {target}"
-    cooldown: 5 # Cooldown in seconds between clicks
+```yaml title="plugins/NookureStaff/items.yml"
+custom-items:
+  custom_item:
+    # The type of the custom item:
+    # COMMAND_AS_PLAYER, COMMAND_AS_CONSOLE, COMMAND_TARGET_AS_PLAYER, COMMAND_TARGET_AS_CONSOLE
+    type: COMMAND_TARGET_AS_PLAYER
 
-  reports_menu:
-    slot: 6
-    material: "BOOK"
-    name: "<gold>Open Reports</gold>"
+    # The command to execute when the item is clicked.
+    # You can use {player} for the staff member and {target} for the clicked player.
+    command: msg {target} Hello, world!
+
+    # Whether the item is enabled or not.
+    # If the item is disabled, it won't be shown to anyone.
+    enabled: false
+
+    # The permission required to use the item.
+    # If the player doesn't have the permission, the item won't be shown.
+    permission: nookurestaff.item.custom
+
+    # The name of the item (supports MiniMessage, hex <#hexcode>, gradients, and &/§).
+    name: <blue>Custom Item
+
+    # The Bukkit Material of the item.
+    material: DIAMOND
+
+    # The hotbar slot of the item (0 to 8, from left to right).
+    slot: 2
+
+    # The lore of the item (supports MiniMessage, hex <#hexcode>, gradients, and &/§).
     lore:
-      - "<gray>Click to view pending reports.</gray>"
-    permission: "nookurestaff.item.custom.reports"
-    executionType: COMMAND_AS_PLAYER
-    command: "reports gui"
+      - <gray>Click to send hello world to the player that you are looking at
 ```

@@ -23,20 +23,18 @@ prefix: "<gradient:#ff5e62:#ff9966><b>[Network Staff]</b></gradient> "
 # Database configuration (must point to the same MySQL database as backend Paper servers)
 database:
   type: MYSQL
-  mysql:
-    host: "127.0.0.1"
-    port: 3306
-    database: "minecraft_network"
-    username: "velocity_user"
-    password: "secure_password"
-    ssl: false
+  host: localhost
+  port: 3306
+  username: nookure
+  password: yourSecurePassword
+  database: database
 
 modules:
   # Enables proxy-side punishment rejection on pre-login
-  punishmentModule: true
+  punishment-module: true
 
 # Enable or disable automatic error reporting to GlitchTip
-errorReporting: true
+error-reporting: true
 ```
 
 ---
