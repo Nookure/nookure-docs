@@ -1,0 +1,33 @@
+---
+import StarlightHead from '@astrojs/starlight/components/Head.astro';
+import { ClientRouter } from 'astro:transitions';
+---
+
+<StarlightHead><slot /></StarlightHead>
+<ClientRouter />
+
+<script is:inline>
+	document.addEventListener('astro:after-swap', () => {
+		const storedTheme =
+			typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
+		const theme =
+			storedTheme ||
+			(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+		document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+	});
+</script>
+
+<style is:global>
+	::view-transition-group(root) {
+		animation-duration: 180ms;
+	}
+
+	main {
+		view-transition-name: main;
+	}
+
+	::view-transition-group(main) {
+		overflow: hidden;
+		animation-duration: 180ms;
+	}
+</style>
