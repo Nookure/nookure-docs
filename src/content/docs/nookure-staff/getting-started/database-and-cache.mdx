@@ -1,11 +1,15 @@
 ---
 title: Database & Cache Configuration
 description: Configuring persistence with SQLite or MySQL/MariaDB and caching with Caffeine or Redis.
+sidebar:
+  badge:
+    text: Plus
+    variant: danger
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-NookureStaff leverages **Ebean ORM 19** with **HikariCP** connection pooling to manage database persistence, paired with high-performance local or distributed cache backends.
+NookureStaff leverages **Ebean ORM 19** with **HikariCP** connection pooling to manage database persistence, paired in **NookureStaff+** with high-performance local (Caffeine) or distributed (Redis) cache backends.
 
 ---
 
