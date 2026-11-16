@@ -17,6 +17,7 @@ export default defineConfig({
 			title: 'Nookure Docs',
 			components: {
 				Head: './src/components/starlight/Head.astro',
+				Search: './src/components/starlight/Search.astro',
 			},
 			logo: {
 				light: './src/assets/nookure.svg',
