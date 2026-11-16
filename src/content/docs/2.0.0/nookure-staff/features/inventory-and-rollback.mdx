@@ -1,0 +1,105 @@
+---
+title: Inventory Inspection & Rollback Engine
+description: Live inventory inspection, snapshot triggers, preview GUIs, and
+  restoration modes in NookureStaff.
+slug: 2.0.0/nookure-staff/features/inventory-and-rollback
+---
+
+import { Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+NookureStaff provides real-time player inventory inspection and an automated rollback engine that saves GZIP-compressed player snapshots upon critical gameplay events.
+
+***
+
+## Live Inventory & Ender Chest Inspection
+
+Staff members can view and interact with player inventories in real time:
+
+* **Survival Inventory**:
+  ```bash
+  /staff invsee <player>
+  ```
+  *Opens live inventory. By default, this is read-only. Editing items requires `nookure.staff.invsee.modify`.*
+
+* **Ender Chest**:
+  ```bash
+  /staff enderchest <player>
+  ```
+  *Opens live ender chest. Editing items requires `nookure.staff.enderchest.modify`.*
+
+***
+
+## Inventory Snapshots & Rollback (`/rollback`)
+
+The Rollback engine creates complete snapshots capturing:
+
+* Storage items & exact hotbar slots
+* Armor (helmet, chestplate, leggings, boots)
+* Offhand item
+* Ender chest contents
+* XP level and precise progress points
+* Health, hunger, and active potion effects
+* World coordinates, server name, and timestamp
+
+### Automatic Snapshot Triggers
+
+Snapshots are captured automatically upon the following triggers:
+
+* **`DEATH`**: When a player dies.
+* **`JOIN`**: When a player logs in.
+* **`QUIT`**: When a player logs out.
+* **`WORLD_CHANGE`**: When a player changes dimensions/worlds.
+* **`COMMAND_CLEAR`**: When `/clear` is executed.
+* **`STAFF_MODIFIED`**: When a staff member alters the player's inventory via `/staff invsee`.
+* **`STAFF_CLEARED_INVENTORY`**: When staff clears another player's inventory.
+* **`CONTAINER_TRANSACTION`**: High-value chest transactions.
+
+***
+
+## Interactive Preview GUI (`SnapshotPreviewGUI`)
+
+Staff can view snapshot history and inspect saved inventories visually:
+
+```bash
+/rollback history <player> [category]
+/rollback preview <snapshotId>
+```
+
+### Features in the Preview GUI:
+
+1. **Interactive Item Examination**: Inspect enchants, lore, and NBT.
+2. **Duplicate Items**: Staff with `nookure.staff.rollback.take` can click an item in the preview GUI to duplicate a copy directly into their own inventory.
+3. **Overview Book**: Displays health, food, potion effects, location, and death cause.
+
+***
+
+## 6 Restoration Modes
+
+When restoring a snapshot, staff can choose exactly how much data to roll back:
+
+```bash
+/rollback restore <id> [type]
+```
+
+| Restoration Mode | Description |
+|---|---|
+| **`ALL`** *(Default)* | Restores inventory, armor, offhand, ender chest, and experience. |
+| **`INVENTORY_ONLY`** | Restores main inventory storage slots, armor, and offhand only. |
+| **`ARMOR_ONLY`** | Restores armor slots and offhand item only. |
+| **`ENDER_CHEST_ONLY`** | Restores ender chest contents only without touching player inventory. |
+| **`EXPERIENCE_ONLY`** | Restores XP levels and progress points only. |
+| **`DROP_AT_LOCATION`** | Drops snapshot items on the ground at the player's current position without overwriting whatever items they are currently carrying. |
+
+***
+
+## Purging Old Snapshots
+
+To conserve database storage, `InventorySnapshotPurgeTask` automatically purges records older than `inventoryRollback.retentionDays` (default: `14` days) on a recurring schedule controlled by `inventoryRollback.purgeIntervalMinutes` (default: `60` minutes, minimum `1` minute).
+
+You can also trigger a manual purge via console or in-game:
+
+```bash
+/rollback purge <days>
+```
+
+*Requires permission: `nookure.staff.rollback.admin`.*

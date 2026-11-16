@@ -1,0 +1,73 @@
+---
+title: Vanish & Glow Systems
+description: Vanish providers, fake announcements, glow outlines, and TAB
+  integration in NookureStaff.
+slug: 2.0.0/nookure-staff/features/vanish-and-glow
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+NookureStaff includes built-in invisibility and visual identification systems designed to keep staff members invisible to regular players while clearly distinguishable to other team members.
+
+***
+
+## Vanish System (`/vanish` or `/v`)
+
+Toggling vanish hides the staff member from:
+
+* Ordinary players in the world.
+* Server tab lists and player counts (`%nkstaff_server_count%`).
+* Entity targeting and ambient mob reactions.
+
+### Vanish Providers
+
+In `config.yml`, configure `staffMode.vanishType`:
+
+* **`INTERNAL_VANISH`** *(Default)*: Uses NookureStaff's native packet-level hiding engine without external dependencies.
+* **`SUPER_VANISH`**: Seamlessly delegates vanish management to the SuperVanish plugin.
+* **`PREMIUM_VANISH`**: Seamlessly delegates vanish management to the PremiumVanish plugin.
+
+### Fake Join / Quit Broadcasts
+
+To prevent players from deducing when staff enter or exit vanish, NookureStaff can broadcast fake quit and join messages:
+
+* When enabling vanish: broadcasts a fake quit message to online non-staff players.
+* When disabling vanish: broadcasts a fake join message.
+* Configurable in `messages.yml`.
+
+### Seeing Vanished Players
+
+Staff members holding the permission:
+
+```text
+nookure.staff.vanish.see
+```
+
+can see other vanished staff members as translucent characters and see them in the `/staff list` GUI.
+
+***
+
+## Glow & Nametag System (`glow.yml`)
+
+The Glow system applies a colored glowing outline to staff members so other staff can quickly spot teammates across distances.
+
+```yaml title="plugins/NookureStaff/glow.yml"
+# Enable or disable the glow feature
+enabled: true
+
+# Change the prefix color of the player's name
+tab-integration: true
+
+# The default color for the glow
+default-color: <white>
+
+# This colors must follow the format: <color> or <#hex>
+glow-colors:
+  admin: <yellow>
+  staff: <red>
+  mod: <green>
+```
+
+### TAB Integration
+
+When `tabIntegration: true` is set, NookureStaff hooks into NEZNAMY's **TAB** plugin to automatically match overhead nametag prefixes and tablist team colors to the staff member's glow color.

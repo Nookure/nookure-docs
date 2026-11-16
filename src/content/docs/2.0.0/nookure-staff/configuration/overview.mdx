@@ -1,0 +1,51 @@
+---
+title: Configuration Overview
+description: Overview of NookureStaff configuration files and MiniMessage text formatting.
+slug: 2.0.0/nookure-staff/configuration/overview
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+NookureStaff is designed to be fully customizable, separating messaging, command mappings, items, caching, and moderation policies into focused configuration files.
+
+***
+
+## Configuration File Tree
+
+<FileTree>
+  * plugins/
+    * NookureStaff/
+      * config.yml Main configuration (modules, database, staff settings)
+      * messages.yml General in-game messages
+      * commands.yml Dynamic command names, aliases, and permissions
+      * items.yml Staff hotbar items and custom command items
+      * messenger.yml Cross-server messaging (Redis, PM, MySQL, None)
+      * plugin-message.yml Velocity AES-256 encrypted channel settings
+      * cache.yml Cache layer configuration (Caffeine vs Redis)
+      * glow.yml Nametag glow colors and TAB plugin integration
+      * staff-mode-blocked-commands.yml Commands prohibited during Staff Mode
+      * partial/
+        * note-messages.yml Chat formatting and buttons for /note
+      * punishment/
+        * config.yml Sanction templates, warn escalation ladders, evidence rules
+        * messages.yml Ban screens, mute warnings, kick messages
+    * nookurestaff/ (Velocity Proxy)
+      * velocity.yml Proxy database connection and punishment module
+      * cache.yml Proxy-side caching settings
+      * punishment/
+        * config.yml Shared sanction configurations
+        * messages.yml Proxy-level kick and ban screens
+</FileTree>
+
+***
+
+## Text Formatting with MiniMessage
+
+All messages in NookureStaff support Adventure **MiniMessage** syntax, offering modern gradients, hex colors, hover tooltips, and clickable click events. For the complete syntax reference, see the official **[MiniMessage Documentation](https://docs.advntr.dev/minimessage/format.html)**.
+
+### Examples:
+
+* **Colors**: `<red>Alert!</red>` or `<#ff5555>Custom Hex</#ff5555>`
+* **Gradients**: `<gradient:#ff5e62:#ff9966><b>NookureStaff</b></gradient>`
+* **Click Events**: `<click:run_command:'/freeze {player}'>[Freeze]</click>`
+* **Hover Text**: `<hover:show_text:'<gray>Click to view notes</gray>'>[Notes]</hover>`

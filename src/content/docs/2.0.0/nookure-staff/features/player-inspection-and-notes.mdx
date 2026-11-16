@@ -1,0 +1,74 @@
+---
+title: Player Inspection & Notes System
+description: Player List, Shift + Right-Click Actions GUI, and persistent player
+  notes in NookureStaff.
+slug: 2.0.0/nookure-staff/features/player-inspection-and-notes
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+NookureStaff streamlines day-to-day moderation workflows with rapid visual menus and persistent administrative notes.
+
+***
+
+## Player List & Actions GUI (`/player-list`)
+
+* **Online Players Browser**:
+  ```bash
+  /player-list
+  ```
+  Opens a Pebble-powered GUI showing all currently connected players with ping, health, and rank badges.
+
+* **Shift + Right-Click Inspection**:
+  Staff members can **Shift + Right-Click** any nearby player in the world to instantly open the **Player Actions GUI** (`actions.peb`).
+
+* **Direct Command Access**:
+  ```bash
+  /player-list <player|uuid>
+  ```
+
+### Player Actions GUI Layout
+
+The Actions GUI provides quick single-click shortcuts to key moderation tasks:
+
+| Slot | Action Button | Function |
+|---|---|---|
+| **10** | **Player Notes** | Opens the `/note inventory` GUI for this player. |
+| **16** | **Teleport** | Instantly teleports the staff member to the target. |
+| **21** | **Inspect Inventory** | Executes `/staff invsee <player>`. |
+| **22** | **Player Info** | Displays registration date, last login, and IP metadata. |
+| **23** | **Inspect Ender Chest**| Executes `/staff enderchest <player>`. |
+| **28** | **Freeze Player** | Executes `/freeze <player>`. |
+| **31** | **Rollback History** | Opens `/rollback history <player>`. |
+| **34** | **Kick Player** | Executes `/kick <player>`. |
+
+***
+
+## User Notes System (`/note`)
+
+Staff members can attach persistent notes to player accounts to track suspicious behavior, verbal warnings, or transaction records.
+
+### Adding Notes
+
+```bash
+/note add <player> <showOnJoin: true|false> <note text> [adminOnly: true|false]
+```
+
+* **`showOnJoin`**: When set to `true`, staff members will receive a notification in chat whenever this player joins the server.
+* **`adminOnly`**: When set to `true`, the note can only be read by staff members with `nookure.staff.notes.admin`.
+
+### Browsing & Managing Notes
+
+* **Interactive Chat List**:
+  ```bash
+  /note list <player> [page]
+  ```
+  Displays notes with clickable interactive buttons:
+  * `[🗑]`: Instantly deletes the note (`/note remove <id>`).
+  * `[👁]`: Toggles `showOnJoin` status (`/note toggle-show <id>`).
+
+* **GUI Notes Browser**:
+  ```bash
+  /note inventory <player>
+  ```
+  Renders all player notes in an interactive Pebble inventory.

@@ -1,0 +1,97 @@
+---
+title: Evidence & S3 Uploads
+description: Mandatory evidence policy, /evidence command, S3-compatible
+  presigned uploads, and auto-pardon enforcement in NookureStaff+.
+slug: 2.0.0/nookure-staff/features/evidence
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+To maintain staff integrity and prevent unjustified sanctions, **NookureStaff+** includes a complete **Evidence Management** system with configurable rank-based deadlines, automatic pardon enforcement, and S3-compatible presigned file uploads.
+
+***
+
+## Mandatory Evidence Policy
+
+NookureStaff+ enforces a configurable **Mandatory Evidence Policy** (`evidenceRequirement`) in `plugins/NookureStaff/punishment/config.yml`:
+
+1. **Staff Tier Deadlines**:
+   Evidence deadlines are mapped to staff ranks using LuckPerms primary groups:
+   ```yaml title="punishment/config.yml"
+   evidenceRequirement:
+     enabled: true
+     deadlines:
+       helper: "2h"
+       moderator: "6h"
+       admin: "24h"
+   ```
+2. **Reminders**:
+   Staff members with pending sanctions receive automated reminders every 10 minutes prompting them to attach or upload their evidence.
+3. **Automated Invalidation (Auto-Pardon)**:
+   If a staff member fails to link evidence before their rank's deadline expires, `EvidenceExpirationTask` automatically pardons the sanction with the reason:
+   ```text
+   Auto-pardoned: Missing mandatory evidence deadline.
+   ```
+4. **Exemption**:
+   Senior management or owners can be granted universal immunity from evidence requirements using:
+   ```text
+   nookure.staff.evidence.exempt
+   ```
+
+***
+
+## Managing Evidence (`/evidence`)
+
+Staff can attach, upload, inspect, and manage sanction evidence using `/evidence` (alias: `/ev`, requires `nookure.staff.evidence`):
+
+| Subcommand | Syntax | Description |
+|---|---|---|
+| **`add`** | `/evidence add <punishmentId> <url> [note] [--actions <id1,id2>]` | Attaches a validated evidence URL (and optional Action Logger IDs) to a punishment. |
+| **`upload`** | `/evidence upload <punishmentId> <filename>` | Generates a secure S3 presigned upload URL when S3 storage is enabled. |
+| **`list`** | `/evidence list <punishmentId>` | Lists all evidence attached to a punishment. |
+| **`pending`** | `/evidence pending [page]` | Lists sanctions issued by the staff member that are still awaiting mandatory evidence. |
+| **`remove`** | `/evidence remove <evidenceId>` | Removes an evidence attachment. Removing another staff member's evidence requires `nookure.staff.evidence.remove.others` or `nookure.staff.evidence.admin`. |
+
+***
+
+## S3-Compatible Evidence Storage
+
+NookureStaff+ supports generating presigned PUT/GET URLs for **AWS S3**, **MinIO**, and **Cloudflare R2** in `plugins/NookureStaff/punishment/config.yml`, allowing staff to upload screenshots or video clips securely without exposing bucket credentials:
+
+```yaml title="plugins/NookureStaff/punishment/config.yml"
+# S3-compatible object storage configuration for evidence uploads (AWS S3, MinIO, Cloudflare R2, etc.).
+s3:
+  # Whether S3-compatible evidence storage is enabled.
+  enabled: false
+  # S3 endpoint (e.g. https://s3.us-east-1.amazonaws.com or https://<accountid>.r2.cloudflarestorage.com)
+  endpoint: https://s3.us-east-1.amazonaws.com
+  # S3 region (e.g. us-east-1, auto, etc.)
+  region: us-east-1
+  # S3 bucket name
+  bucket: nookurestaff-evidence
+  # AWS/S3 Access Key ID
+  access-key: ''
+  # AWS/S3 Secret Access Key
+  secret-key: ''
+  # Use path-style access (http://endpoint/bucket/key) instead of virtual-hosted style (http://bucket.endpoint/key). Recommended for MinIO.
+  path-style-access: false
+  # Optional public/CDN URL prefix to view evidence directly (e.g. https://cdn.myserver.net). If empty, signed GET URLs are generated.
+  cdn-url: ''
+  # Maximum upload size allowed in bytes. Default: 52428800 (50 MB)
+  max-file-size-bytes: 52428800
+  # Presigned URL expiration in seconds for uploads (PUT/POST)
+  upload-url-expiration-seconds: 900
+  # Presigned URL expiration in seconds for private GET downloads
+  download-url-expiration-seconds: 3600
+```
+
+***
+
+## Permissions
+
+| Permission Node | Description |
+|---|---|
+| `nookure.staff.evidence` | Access to `/evidence` to attach, upload, and view sanction evidence. |
+| `nookure.staff.evidence.admin` | Administrative permission to delete and manage any evidence attachment. |
+| `nookure.staff.evidence.remove.others` | Allows removing evidence attachments created by other staff members. |
+| `nookure.staff.evidence.exempt` | Exempts staff rank from the Mandatory Evidence Policy deadline. |

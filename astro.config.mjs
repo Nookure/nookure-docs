@@ -1,12 +1,19 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightVersions from 'starlight-versions';
 
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://docs.nookure.com',
 	integrations: [
 		starlight({
+			plugins: [
+				starlightVersions({
+					current: { label: 'Next' },
+					versions: [{ slug: '2.0.0', label: '2.0.0 (Beta)' }],
+				}),
+			],
 			title: 'Nookure Docs',
 			logo: {
 				light: './src/assets/nookure.svg',

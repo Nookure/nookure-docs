@@ -1,0 +1,85 @@
+---
+title: Commands Reference
+description: Complete reference table for all NookureStaff commands,
+  subcommands, aliases, and usages.
+slug: 2.0.0/nookure-staff/reference/commands
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+This page lists all commands provided by NookureStaff. Note that names and aliases can also be customized via `commands.yml`.
+
+***
+
+## Core Administration & Mode Commands
+
+| Command | Subcommands | Aliases | Permission | Description |
+|---|---|---|---|---|
+| `/NookureStaff` | `reload` | `nkstaff`, `ns` | `nookure.staff.admin` | Main plugin command. `/nkstaff reload` reloads all configuration files. |
+| `/staff` | *(none)* | *(none)* | `nookure.staff.mode` | Toggles Staff Mode. (Requires `nookure.staff`). |
+| `/staff list` | *(none)* | *(none)* | `nookurestaff.staff.list` | Opens GUI list of all online staff members. |
+| `/staff invsee` | `<player>` | *(none)* | `nookure.staff.invsee` | Inspects target player's inventory in real time. |
+| `/staff enderchest` | `<player>` | *(none)* | `nookure.staff.enderchest` | Inspects target player's ender chest. |
+| `/staff channel` | `<global\|staff>` | *(none)* | `nookure.staff.chatchannel` | Switches default chat channel destination. |
+| `/vanish` | *(none)* | `v` | `nookure.staff.vanish` | Toggles vanish mode. |
+| `/staffchat` | `[message]` | `sc` | `nookure.staff.staffchat` | Sends a message to staff chat or toggles staff chat lock. |
+
+***
+
+## Moderation & Freeze Commands
+
+| Command | Subcommands | Aliases | Permission | Description |
+|---|---|---|---|---|
+| `/freeze` | `<player> [pause]` | *(none)* | `nookure.staff.freeze` | Freezes or unfreezes target player, or pauses countdown. |
+| `/freeze /exec` | `<uuid>` | *(none)* | `nookure.staff.freeze` | Internal click-action to punish a player who disconnected while frozen. |
+| `/freeze /remove` | `<uuid>` | *(none)* | `nookure.staff.freeze` | Internal click-action to dismiss a disconnect notification without punishment. |
+| `/freezechat` | `<player> <message>` | *(none)* | `nookure.staff.freeze` | Private isolated chat channel with a frozen player. |
+| `/player-list` | `[player\|uuid]` | *(none)* | `nookure.staff.player-list` | Opens online players GUI or direct Actions GUI for target. |
+
+***
+
+## Sanctions & Punishments
+
+| Command | Syntax | Aliases | Permission | Description |
+|---|---|---|---|---|
+| `/ban` | `<player> [duration] [reason] [-s]` | *(none)* | `nookure.staff.ban` | Issues permanent or temporary ban. |
+| `/tempban` | `<player> <duration> [reason] [-s]` | *(none)* | `nookure.staff.tempban` | Issues temporary ban. |
+| `/ipban` | `<player\|ip> [duration] [reason] [-s]` | `tempipban` | `nookure.staff.ipban` | Issues IP-level ban. |
+| `/unban` | `<player\|ip> [reason]` | *(none)* | `nookure.staff.unban` | Pardons active ban. |
+| `/mute` | `<player> [duration] [reason] [-s]` | *(none)* | `nookure.staff.mute` | Mutes player from sending chat messages. |
+| `/tempmute` | `<player> <duration> [reason] [-s]` | *(none)* | `nookure.staff.tempmute` | Temporarily mutes player. |
+| `/ipmute` | `<player\|ip> [duration] [reason] [-s]` | `tempipmute` | `nookure.staff.ipmute` | Mutes all accounts connecting from IP. |
+| `/unmute` | `<player\|ip> [reason]` | *(none)* | `nookure.staff.unmute` | Pardons active mute. |
+| `/warn` | `<player> [category] [reason] [-s]` | *(none)* | `nookure.staff.warn` | Issues warning with auto-escalation check. |
+| `/unwarn` | `<player\|warningId> [reason]` | *(none)* | `nookure.staff.unwarn` | Revokes warning and rolls back triggered sanctions. |
+| `/kick` | `<player> [reason] [-s]` | *(none)* | `nookure.staff.kick` | Disconnects player. |
+| `/history` | `<player> [page]` | `checkpunishments` | `nookure.staff.history` | Displays paginated punishment history. |
+| `/punish` | `[player] [type]` | `sanction` | `nookure.staff` | Opens interactive punishment selector & confirmation GUI. |
+| `/evidence` | `<add\|upload\|list\|pending\|remove>` | `ev` | `nookure.staff.evidence` | Manages punishment evidence attachments and S3 presigned uploads. |
+| `/dupeip` | `<player\|ip\|approve\|unapprove> [player]` | `alts`, `checkalts` | `nookure.staff.dupeip` | Inspects linked alt accounts and manages alt approvals. |
+
+***
+
+## Notes Commands
+
+| Command | Subcommands | Aliases | Permission | Description |
+|---|---|---|---|---|
+| `/note add` | `<target> <showOnJoin> <note> [adminOnly]` | *(none)* | `nookure.staff.notes.add` | Adds persistent note to player. |
+| `/note remove` | `<noteId>` | *(none)* | `nookure.staff.notes.remove` | Deletes a note by ID. |
+| `/note list` | `<target> [page]` | *(none)* | `nookure.staff.notes.list` | Displays notes in chat with interactive buttons. |
+| `/note toggle-show` | `<noteId>` | *(none)* | `nookure.staff.notes.edit` | Toggles show-on-join notification for note. |
+| `/note inventory` | `<player>` | *(none)* | `nookure.staff.notes` | Opens interactive Pebble GUI of notes. |
+
+***
+
+## Rollback & Akko Telemetry
+
+| Command | Subcommands | Aliases | Permission | Description |
+|---|---|---|---|---|
+| `/rollback history` | `<player> [category] [page]` | `snapshots` | `nookure.staff.rollback.view` | Opens snapshot category or history GUI. |
+| `/rollback preview` | `<snapshotId>` | *(none)* | `nookure.staff.rollback.view` | Opens interactive snapshot preview GUI. |
+| `/rollback restore` | `<snapshotId> [type]` | *(none)* | `nookure.staff.rollback.restore` | Restores snapshot data (`ALL`, `INVENTORY_ONLY`, etc.). |
+| `/rollback purge` | `<days>` | *(none)* | `nookure.staff.rollback.admin` | Deletes snapshots older than specified cutoff days. |
+| `/akko connect` | *(none)* | *(none)* | `nookure.staff.akko.connect` | Connects server to Akko WebSocket dashboard. |
+| `/akko disconnect` | *(none)* | *(none)* | `nookure.staff.akko.disconnect` | Disconnects server from Akko. |
+| `/akko auth` | `<key>` | *(none)* | `nookure.staff.akko.auth` | Authenticates WebSocket room session. |

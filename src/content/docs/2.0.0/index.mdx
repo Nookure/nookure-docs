@@ -1,0 +1,45 @@
+---
+title: Nookure Documentation
+description: Official documentation portal for Nookure software and Minecraft
+  network solutions.
+template: splash
+hero:
+  tagline: Modern, high-performance software and tools built for Minecraft
+    networks and servers.
+  image:
+    file: ../../../assets/2.0.0/nookure-white.svg
+    alt: Nookure Logo
+  actions:
+    - text: NookureStaff Documentation
+      link: /2.0.0/nookure-staff/
+      icon: right-arrow
+      variant: primary
+    - text: GitHub Organization
+      link: https://github.com/nookure
+      icon: external
+      variant: minimal
+slug: 2.0.0
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Explore Products
+
+<CardGrid stagger>
+  <Card title="NookureStaff" icon="rocket">
+    High-performance, enterprise-grade staff management, moderation, auditing, and inventory tracking suite for Paper and Velocity.
+    [View Documentation →](/2.0.0/nookure-staff/)
+  </Card>
+
+  <Card title="Multi-Product Platform" icon="puzzle">
+    Built to scale with additional Nookure plugins, bridges, and web applications as they become available.
+  </Card>
+
+  <Card title="Developer First" icon="setting">
+    Modern APIs, dependency injection architecture, internal event buses, and custom addon systems designed for extensibility.
+  </Card>
+
+  <Card title="Enterprise Scalability" icon="rocket">
+    Engineered for large networks with Redis caching, encrypted proxy messaging, and Ebean ORM migrations.
+  </Card>
+</CardGrid>

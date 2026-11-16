@@ -1,0 +1,108 @@
+---
+title: Moderation & Punishments Framework
+description: Sanctions engine, shortcode templates, silent flags, and history
+  auditing in NookureStaff.
+slug: 2.0.0/nookure-staff/features/moderation-and-punishments
+---
+
+import { Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+NookureStaff provides a full-featured moderation engine supporting temporary and permanent bans, IP sanctions, mutes, warnings, and kicks.
+
+***
+
+## Sanction Commands & Syntax
+
+| Sanction Type | Command Syntax | Description |
+|---|---|---|
+| **Permanent Ban** | `/ban <player> [reason] [-s]` | Bans player account indefinitely. |
+| **Temporary Ban** | `/tempban <player> <duration> [reason] [-s]` | Bans player account for a specific duration (e.g., `7d`, `12h`). |
+| **IP Ban** | `/ipban <player\|ip> [duration] [reason] [-s]` | Bans the target's IP address. If target is online, bans their active IP. |
+| **Unban** | `/unban <player\|ip> [reason]` | Pardons active ban or IP-ban. |
+| **Mute** | `/mute <player> [reason] [-s]` | Prevents player from sending chat messages. |
+| **Temporary Mute** | `/tempmute <player> <duration> [reason] [-s]` | Mutes player for specified duration. |
+| **IP Mute** | `/ipmute <player\|ip> [duration] [reason] [-s]` | Mutes all accounts connecting from the target IP. |
+| **Unmute** | `/unmute <player\|ip> [reason]` | Pardons active mute. |
+| **Kick** | `/kick <player> [reason] [-s]` | Disconnects player from the server or proxy. |
+| **History** | `/history <player> [page]` | Opens paginated sanction audit log for the player. |
+| **Punish GUI** | `/punish [player] [type]` | Opens the interactive punishment selector and confirmation GUI (alias: `/sanction`). |
+
+:::note[Staff Immunity & Granular Pardons]
+* Staff members with `nookure.staff.punishment.bypass` cannot be banned, muted, kicked, or warned (including via `/ipban` or `/ipmute`, which also prevent self-punishment).
+* Pardoning a punishment created by **another** staff member via `/unban`, `/unmute`, or `/unwarn` requires `nookure.staff.punishments.pardon.others`.
+:::
+
+***
+
+## Interactive Punish GUI (`/punish`)
+
+Staff can issue sanctions visually without memorizing durations or template keys:
+
+```bash
+/punish [player] [type]
+```
+
+*Alias: `/sanction` (requires `nookure.staff` plus the permission for the selected sanction type).*
+
+1. **Player Selector**: Running `/punish` with no arguments opens a player selector GUI.
+2. **Type & Template Selector**: Selecting a player (or running `/punish <player>`) opens the sanction type menu (`ban`, `tempban`, `ipban`, `mute`, `tempmute`, `ipmute`, `warn`, `kick`) followed by configured templates with custom `material` icons.
+3. **Confirmation Dialog**: Before applying a template sanction, a confirmation GUI displays the target, reason, and duration to prevent accidental punishments.
+
+***
+
+## Shortcodes & Templates
+
+Instead of typing long reasons and durations manually, staff members can use configured **shortcodes** defined in `plugins/NookureStaff/punishment/config.yml`.
+
+### Example Usages:
+
+```bash
+# Applies predefined cheating reason and default duration
+/ban Notch cheating
+
+# Applies template #1
+/ban Notch 1
+
+# Overrides template duration while keeping the template reason
+/ban Notch 14d cheating
+```
+
+### Template Configuration:
+
+```yaml title="punishment/config.yml"
+templates:
+  ban:
+    cheating:
+      id: 1
+      duration: "30d"
+      reason: "Unfair Advantage / Cheating"
+    toxic:
+      id: 2
+      duration: "7d"
+      reason: "Harassment and Toxicity"
+```
+
+***
+
+## Silent Punishments (`-s`)
+
+Appending `-s`, `--silent`, or `-silent` to any punishment command suppresses public broadcasts.
+
+* Regular players will not see a broadcast.
+* Only staff members with `nookure.staff.punishments.see.silent` will receive the punishment notification.
+
+```bash
+/ban Spammer -s Advertising another server
+```
+
+***
+
+## Login & Chat Interceptors
+
+* **Ban Screen**: When a banned player attempts to connect, NookureStaff intercepts the connection and presents a customizable MiniMessage screen displaying:
+  * Sanction ID
+  * Reason
+  * Punishing staff member
+  * Expiration timestamp
+  * Appeal website URL
+* **Mute Interceptor**: When a muted player types in chat, their message is blocked and an actionbar/chat notice informs them of their remaining mute duration.

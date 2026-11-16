@@ -1,0 +1,47 @@
+---
+title: NookureStaff Overview
+description: High-performance, modular staff management, moderation, auditing,
+  and inventory tracking suite for Minecraft networks.
+slug: 2.0.0/nookure-staff
+---
+
+import { Card, CardGrid, Badge } from '@astrojs/starlight/components';
+
+**NookureStaff OSS** is an open-source (AGPLv3) staff management and moderation suite built for modern Minecraft networks, while **NookureStaff+** is the paid edition that adds enterprise-grade modules including the **Web Viewer (Beta)**, **Punishments**, **Inventory Rollback**, and **Actions** auditing.
+
+***
+
+## Key Highlights
+
+<CardGrid>
+  <Card title="Staff Mode & Toolkit" icon="rocket">
+    Full staff isolation mode with inventory preservation, automatic vanish, customizable hotbar items, silent container inspection, and actionbar HUD.
+  </Card>
+
+  <Card title="Modern Punishments Engine" icon="warning">
+    Available in **NookureStaff+**: Flexible sanctions (Ban, TempBan, IP-Ban, Mute, Warn, Kick) with `/punish` GUIs, auto-escalation ladders, `/dupeip` alt detection, and a mandatory evidence policy.
+  </Card>
+
+  <Card title="Inventory Snapshots & Rollback" icon="document">
+    Available in **NookureStaff+**: GZIP-compressed inventory, armor, potion effect, and ender chest snapshots triggered automatically on death, join, world change, and staff actions.
+  </Card>
+
+  <Card title="Multi-Server Synchronization" icon="random">
+    Zero-latency cross-server sync via Redis Pub/Sub, encrypted Velocity plugin messaging (AES-256-GCM), or MySQL polling queues.
+  </Card>
+
+  <Card title="Web Viewer (Beta) & Actions" icon="laptop">
+    Available in **NookureStaff+**: Real-time web dashboard integration via Akko WebSockets and forensic Action Logger database auditing.
+  </Card>
+</CardGrid>
+
+***
+
+## Quick Navigation
+
+* **[NookureStaff vs NookureStaff+](/2.0.0/nookure-staff/editions-comparison/)**: Compare features included in the free OSS edition and the paid **NookureStaff+** edition.
+* **[Installation Guide](/2.0.0/nookure-staff/getting-started/installation/)**: System requirements, Java 25 setup, and first-boot instructions.
+* **[Database & Cache](/2.0.0/nookure-staff/getting-started/database-and-cache/)**: Configuring SQLite vs. MySQL/MariaDB and Caffeine vs. Redis.
+* **[Network Synchronization](/2.0.0/nookure-staff/getting-started/network-sync/)**: Setting up Redis Pub/Sub, Velocity encrypted messaging, or MySQL polling.
+* **[Commands Reference](/2.0.0/nookure-staff/reference/commands/)**: Searchable reference of all commands, subcommands, and aliases.
+* **[Permissions Reference](/2.0.0/nookure-staff/reference/permissions/)**: Granular permission nodes.

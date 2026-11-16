@@ -1,0 +1,72 @@
+---
+title: Alt Accounts & /dupeip
+description: Detect linked alternate accounts by IP, manage staff approvals, and
+  configure join alerts in NookureStaff.
+slug: 2.0.0/nookure-staff/features/alt-accounts
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+NookureStaff tracks IP-to-account relationships (`AltAccountLinkModel`) to help staff members detect ban evasion, unauthorized alt accounts, and shared household connections.
+
+***
+
+## Inspecting Alt Accounts (`/dupeip`)
+
+```bash
+/dupeip <player|ip>
+```
+
+*Aliases: `/alts`, `/checkalts`*
+
+* **Player Lookup**: Displays all accounts linked to the target player's known IP addresses, along with their online status, active ban/mute indicators, and approval status.
+* **IP Lookup**: Lists all accounts associated with a specific IPv4/IPv6 address.
+
+***
+
+## Approving Shared Connections
+
+Legitimate players (such as siblings or roommates sharing a network) can be approved so they do not repeatedly trigger unapproved alt alerts:
+
+```bash
+# Approve a player's linked alt relationship
+/dupeip approve <player>
+
+# Revoke a previous alt approval
+/dupeip unapprove <player>
+```
+
+*(Requires `nookure.staff.dupeip.approve`.)*
+
+All lookups, approvals, and revocations are recorded in the Action Logger (`STAFF_ALTS_LOOKUP`, `STAFF_ALT_APPROVE`, `STAFF_ALT_UNAPPROVE`).
+
+***
+
+## Automatic Join Notifications
+
+When a player connects with linked alternate accounts, `DupeIpJoinListener` notifies online staff holding `nookure.staff.dupeip.notify`.
+
+* Notifications include interactive clickable `[Approve]` and `[Ban]` action buttons.
+* Behavior can be customized under `dupeIp` in `plugins/NookureStaff/punishment/config.yml`:
+
+```yaml title="plugins/NookureStaff/punishment/config.yml"
+# Configuration for /dupeip alt account detection, approval, and join notifications.
+dupe-ip:
+  # Whether staff members are automatically notified when a player joins with linked alt accounts.
+  notify-on-join: true
+  # Whether quick [Approve] / [Ban] action buttons are shown on join even when all linked accounts are already approved.
+  show-actions-when-all-approved: false
+  # IP addresses ignored when linking or alerting about alt accounts (e.g. unknown IP 0.0.0.0).
+  ignored-ips:
+    - 0.0.0.0
+```
+
+***
+
+## Permissions
+
+| Permission Node | Description |
+|---|---|
+| `nookure.staff.dupeip` | Allows executing `/dupeip` to inspect linked alt accounts. |
+| `nookure.staff.dupeip.approve` | Allows approving or revoking alt account relationships. |
+| `nookure.staff.dupeip.notify` | Receives automatic alt account alerts when players join. |

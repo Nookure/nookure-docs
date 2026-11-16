@@ -1,0 +1,59 @@
+---
+title: Integrations & Auditing
+description: Action Logger database auditing, Akko WebSockets, and LuckPerms
+  hooks in NookureStaff.
+slug: 2.0.0/nookure-staff/features/integrations
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+NookureStaff integrates with modern ecosystem tools and includes dedicated auditing engines for remote monitoring and administrative oversight.
+
+***
+
+## 1. Action Logger
+
+The Action Logger audits critical player and staff operations directly into your database for forensic analysis.
+
+### Tracked Action Types
+
+* `STAFF_MODE_ENTER` & `STAFF_MODE_EXIT`
+* `STAFF_VANISH_TOGGLE`
+* `STAFF_FREEZE_PLAYER`, `STAFF_UNFREEZE_PLAYER` & `STAFF_FREEZE_ACTION_AS_EVIDENCE`
+* `STAFF_INSPECT_INVENTORY` & `STAFF_MODIFIED_INVENTORY`
+* `STAFF_NOTE_ADD` & `STAFF_NOTE_DELETE`
+* `STAFF_ROLLBACK_INVENTORY`
+* `STAFF_ALTS_LOOKUP`, `STAFF_ALT_APPROVE` & `STAFF_ALT_UNAPPROVE`
+* `STAFF_IP_BAN`, `STAFF_IP_MUTE` & `PUNISHMENT_AUTO_TRIGGER`
+* `PLAYER_LOGIN` & `PLAYER_QUIT`
+* `PLAYER_COMMAND` & `PLAYER_CHAT`
+
+Each action log entry stores the timestamp, actor UUID, target UUID, server name, coordinates, and detailed JSON metadata.
+
+***
+
+## 2. Akko WebSockets (Web Viewer Beta)
+
+NookureStaff+ includes built-in real-time streaming via **Akko** (`Daiana4j` and Google Protobuf):
+
+* Streams server performance statistics (TPS, MSPT, RAM usage, CPU load).
+* Displays online staff and player states in the web dashboard.
+* Supports remote punishment queries, creation, evidence handling, and real-time punishment broadcasts over WebSockets.
+
+### Akko Commands
+
+* `/akko connect`: Establishes WebSocket connection to the Akko dashboard.
+* `/akko disconnect`: Disconnects from the remote server.
+* `/akko auth <key>`: Authenticates the server session (requires `nookure.staff.akko.auth`).
+
+*IP lookup permission: Staff holding `nookure.staff.iplookup` can view connected player IP addresses in Akko web sessions.*
+
+***
+
+## 3. LuckPerms Live Hook
+
+NookureStaff listens to LuckPerms permission mutation events in real time:
+
+* Automatically re-evaluates player wrappers when ranks or permissions change, granting or revoking staff status dynamically without requiring a reconnect.
+* Resolves staff primary groups for the **Mandatory Evidence Policy** deadlines.
+* Automatically synchronizes nametag glow colors.

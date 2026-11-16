@@ -1,0 +1,54 @@
+---
+title: Telemetry & Transparency
+description: How NookureStaff uses bStats for anonymous usage statistics and
+  GlitchTip for error reporting, and how to opt out.
+slug: 2.0.0/nookure-staff/features/telemetry-and-transparency
+---
+
+At Nookure, we believe in full transparency regarding any data our plugins transmit. NookureStaff+ uses two standard, privacy-respecting telemetry tools to help us understand ecosystem usage and fix bugs quickly: **bStats** and **GlitchTip**.
+
+***
+
+## 1. Usage Statistics (bStats)
+
+NookureStaff uses **[bStats](https://bstats.org/)** to collect completely anonymous, aggregated usage metrics.
+
+### What is collected?
+
+* Server count and online player count
+* Minecraft version and server software (e.g., Paper, Velocity)
+* Java version and operating system architecture
+* Plugin version
+
+No IP addresses, player names, UUIDs, chat logs, or private server configurations are ever collected by bStats.
+
+### How to Opt Out
+
+You can disable bStats metrics globally for all plugins at any time by editing `plugins/bStats/config.yml`:
+
+```yaml title="plugins/bStats/config.yml"
+enabled: false
+```
+
+***
+
+## 2. Error Reporting (GlitchTip / Sentry)
+
+NookureStaff integrates with **GlitchTip** (an open-source, Sentry-compatible error tracking platform) to automatically report unhandled exceptions and stack traces.
+
+### Why we use it
+
+When an unexpected error occurs on a server, GlitchTip captures the stack trace and basic runtime context (such as plugin version and server platform) so our team can identify, reproduce, and patch bugs without waiting for manual bug reports.
+
+### How to Opt Out
+
+You can disable automatic error reporting at any time in your configuration:
+
+* **Paper (`plugins/NookureStaff/config.yml`)**:
+  ```yaml title="plugins/NookureStaff/config.yml"
+  errorReporting: false
+  ```
+* **Velocity (`plugins/nookurestaff/velocity.yml`)**:
+  ```yaml title="plugins/nookurestaff/velocity.yml"
+  errorReporting: false
+  ```

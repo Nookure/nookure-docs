@@ -1,0 +1,51 @@
+---
+title: Velocity Proxy Configurations
+description: Configuration reference for NookureStaff on Velocity proxy gateways.
+slug: 2.0.0/nookure-staff/configuration/velocity-configs
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+When running a Bungee-alternative network using **Velocity 3.4+**, `NookureStaff-Velocity` acts as the security boundary.
+
+***
+
+## `velocity.yml`
+
+Located at `plugins/nookurestaff/velocity.yml`:
+
+```yaml title="plugins/nookurestaff/velocity.yml"
+# Enable debug messages in the Velocity proxy console
+debug: false
+
+# Prefix for proxy-level staff broadcasts
+prefix: "<gradient:#ff5e62:#ff9966><b>[Network Staff]</b></gradient> "
+
+# Database configuration (must point to the same MySQL database as backend Paper servers)
+database:
+  type: MYSQL
+  mysql:
+    host: "127.0.0.1"
+    port: 3306
+    database: "minecraft_network"
+    username: "velocity_user"
+    password: "secure_password"
+    ssl: false
+
+modules:
+  # Enables proxy-side punishment rejection on pre-login
+  punishmentModule: true
+
+# Enable or disable automatic error reporting to GlitchTip
+errorReporting: true
+```
+
+***
+
+## Velocity Punishment & Pre-Login Gate
+
+Because Velocity sits between players and backend Paper servers:
+
+1. `PunishmentLoginListener` intercepts `PreLoginEvent` on Velocity.
+2. If the connecting UUID or IP is flagged with an active Ban or IP-Ban, the connection is aborted immediately.
+3. The player receives the kick message defined in `plugins/nookurestaff/punishment/messages.yml` without taxing backend server resources.

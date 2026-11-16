@@ -1,0 +1,107 @@
+---
+title: Database & Cache Configuration
+description: Configuring persistence with SQLite or MySQL/MariaDB and caching
+  with Caffeine or Redis.
+slug: 2.0.0/nookure-staff/getting-started/database-and-cache
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+NookureStaff leverages **Ebean ORM 19** with **HikariCP** connection pooling to manage database persistence, paired with high-performance local or distributed cache backends.
+
+***
+
+## Database Configuration
+
+Database credentials and driver settings are defined in the `database` block of `plugins/NookureStaff/config.yml` (Paper) and `plugins/nookurestaff/velocity.yml` (Proxy).
+
+### Supported Engines
+
+<Tabs>
+  <TabItem label="SQLite (Single Server)">
+    Recommended solely for standalone servers without cross-server requirements.
+
+    ```yaml title="config.yml"
+    database:
+      type: SQLITE
+      sqlite:
+        file: "storage.db"
+    ```
+
+    * The SQLite database file will be created automatically in your plugin data folder.
+    * Automated migrations will execute on boot to create all necessary tables.
+  </TabItem>
+
+  <TabItem label="MySQL / MariaDB (Networks)">
+    Required for multi-server networks and Velocity proxy enforcement.
+
+    ```yaml title="config.yml & velocity.yml"
+    database:
+      type: MYSQL
+      mysql:
+        host: "127.0.0.1"
+        port: 3306
+        database: "minecraft_network"
+        username: "staff_admin"
+        password: "secure_password_here"
+        ssl: false
+        pool:
+          maximumPoolSize: 10
+          minimumIdle: 2
+          idleTimeout: 30000
+          connectionTimeout: 10000
+    ```
+  </TabItem>
+</Tabs>
+
+***
+
+## Cache Configuration (`cache.yml`)
+
+NookureStaff uses an abstraction layer for caching active punishments, player metadata, staff states, and pre-login authorization tokens.
+
+Configured in `plugins/NookureStaff/cache.yml`:
+
+```yaml title="plugins/NookureStaff/cache.yml"
+# The cache provider backend to use.
+# Options:
+# - CAFFEINE: Local in-memory cache (recommended for standalone servers).
+# - REDIS: Distributed Redis cache (recommended for multi-server networks and proxies
+#          to ensure bans, mutes, and staff states are instantly synchronized).
+type: CAFFEINE
+
+# Default expiration time for cached entries in seconds (default: 300 = 5 minutes).
+default-ttl-seconds: 300
+
+# Maximum entries in local Caffeine cache before eviction (default: 5000).
+# Only applicable when using CAFFEINE.
+caffeine-max-size: 5000
+
+# Dedicated Redis cache connection configuration.
+redis:
+  # The address of the Redis server for cache.
+  address: localhost
+  # The port of the Redis server. Default is 6379.
+  port: 6379
+  # The username to use when connecting to Redis (Redis 6+ ACL). Leave empty if not required.
+  username: ''
+  # The password to use when connecting to Redis. Leave empty if not required.
+  password: ''
+  # The Redis database index to use for cache (default: 1 to separate from messenger/pubsub).
+  database: 1
+  # Connection pool size for Redis caching operations.
+  pool-size: 10
+  # Connection and socket timeout in milliseconds.
+  timeout: 2000
+  # Prefix applied to all cache keys in Redis to avoid collisions.
+  key-prefix: 'nkstaff:cache:'
+```
+
+### Choosing a Cache Provider
+
+1. **`CAFFEINE`**:
+   * Ultra-fast local JVM in-memory caching.
+   * Ideal for standalone servers or networks that use Redis Pub/Sub for explicit cache invalidation events.
+2. **`REDIS`**:
+   * Shared distributed cache.
+   * Recommended for large networks with multiple proxies where ban or mute checks must reflect globally across all instances without delay.

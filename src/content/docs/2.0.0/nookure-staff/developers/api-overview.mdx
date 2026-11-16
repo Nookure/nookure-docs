@@ -1,0 +1,60 @@
+---
+title: Developer API Overview
+description: Getting started with NookureStaff API, dependency management, and architecture.
+slug: 2.0.0/nookure-staff/developers/api-overview
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+NookureStaff provides a clean API module (`NookureStaff-API`) designed to allow other plugins or standalone addons to interact with staff wrappers, subscribe to event buses, and manage punishments.
+
+***
+
+## Adding the Dependency
+
+<Tabs>
+  <TabItem label="Gradle (Kotlin DSL)">
+    ```kotlin title="build.gradle.kts"
+    repositories {
+        maven("https://repo.nookure.com/repository/maven-public/")
+    }
+
+    dependencies {
+        compileOnly("com.nookure.staff:NookureStaff-API:2.0.0")
+    }
+    ```
+  </TabItem>
+
+  <TabItem label="Maven">
+    ```xml title="pom.xml"
+    <repositories>
+        <repository>
+            <id>nookure-repo</id>
+            <url>https://repo.nookure.com/repository/maven-public/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.nookure.staff</groupId>
+            <artifactId>NookureStaff-API</artifactId>
+            <version>2.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    ```
+  </TabItem>
+</Tabs>
+
+***
+
+## Core Architecture Principles
+
+1. **Player Wrapper Pattern**:
+   * `PlayerWrapper`: Represents standard player models, caching UUID, name, and database state.
+   * `StaffPlayerWrapper`: Extends `PlayerWrapper` for players with `nookure.staff`. Holds staff mode status, vanish state, and assigned glow colors.
+2. **Dependency Injection & Services**:
+   * Internal components and services (such as `PunishmentService`, `AltAccountService`, `S3PresignerService`, and `ActionService`) are managed using Google Guice.
+   * Plugins can utilize `@Inject` to resolve service singletons.
+3. **Decoupled Event Bus**:
+   * In addition to standard Bukkit listeners, NookureStaff features an internal high-performance event bus (`EventManager`) for cross-platform and network-level packet events.
