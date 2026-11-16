@@ -1,0 +1,62 @@
+---
+title: Events Reference
+description: Complete listing of NookureStaff internal events and cross-server network packets.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+NookureStaff provides a dedicated event bus managed by `EventManager` (`com.nookure.staff.api.event`), allowing developers to listen and respond to staff workflows, sanctions, and network packets.
+
+---
+
+## Staff & Moderation Events
+
+| Event Class | Package | Description |
+|---|---|---|
+| `StaffModeUpdatedEvent` | `com.nookure.staff.api.event.staff` | Fired when a staff member enables or disables Staff Mode. |
+| `StaffVanishUpdatedEvent` | `com.nookure.staff.api.event.staff` | Fired when a staff member toggles vanish on or off. |
+| `StaffDisconnectEvent` | `com.nookure.staff.api.event.staff` | Fired when a staff member disconnects from the server. |
+| `PunishmentCreatedEvent` | `com.nookure.staff.api.event.punishment` | Fired when any sanction (Ban, Mute, Warn, Kick) is created. |
+| `PunishmentEvidenceAddedEvent` | `com.nookure.staff.api.event.punishment` | Fired when evidence URL/link is attached to an existing sanction. |
+| `PunishmentPardonedEvent` | `com.nookure.staff.api.event.punishment` | Fired when a sanction is unbanned, unmuted, or pardoned. |
+
+---
+
+## Action & Player Events
+
+| Event Class | Package | Description |
+|---|---|---|
+| `ActionRecordedEvent` | `com.nookure.staff.api.event.action` | Fired whenever an action log entry is saved into the database. |
+| `PlayerJoinEvent` | `com.nookure.staff.api.event.player` | Fired when a player wrapper is initialized upon connection. |
+| `PlayerLeaveEvent` | `com.nookure.staff.api.event.player` | Fired when a player wrapper is destroyed on disconnection. |
+| `PlayerModelLoadedEvent` | `com.nookure.staff.api.event.player` | Fired once the player's persistent database model finishes loading. |
+
+---
+
+## Cross-Server Messenger Events
+
+When using Redis or Velocity Plugin Messaging, these network packet events are dispatched across all instances:
+
+- `MStaffModeEnabledEvent` & `MStaffModeDisabledEvent`: Broadcasts staff mode transitions across servers.
+- `MPunishmentCreatedEvent`: Informs all network instances to drop or update local caches upon new bans/mutes.
+- `MPunishmentPardonedEvent`: Informs all network instances of a pardon.
+
+---
+
+## Registering an Event Listener
+
+```java
+import com.nookure.staff.api.event.EventHandler;
+import com.nookure.staff.api.event.staff.StaffModeUpdatedEvent;
+
+public class MyStaffListener {
+
+    @EventHandler
+    public void onStaffModeToggle(StaffModeUpdatedEvent event) {
+        boolean isNowInStaffMode = event.isStaffMode();
+        var staffPlayer = event.getPlayer();
+        
+        System.out.println(staffPlayer.getName() + " staff mode is now: " + isNowInStaffMode);
+    }
+}
+```

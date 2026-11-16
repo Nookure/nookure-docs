@@ -1,0 +1,66 @@
+---
+title: Warnings & Auto-Escalation
+description: Warning categories, decay timers, automated escalation ladders, and smart unwarn rollbacks in NookureStaff+.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+**NookureStaff+** features an advanced warning system equipped with automated escalation ladders, warning decay, and smart sanction rollbacks when warnings are revoked.
+
+---
+
+## Warning System (`/warn` & `/unwarn`)
+
+Staff issue warnings using:
+```bash
+/warn <player> [category] [reason] [-s]
+```
+
+To revoke a warning:
+```bash
+/unwarn <player|warningId> [reason]
+```
+
+### Warning Categories & Decay
+Warnings are categorized (e.g. `flood`, `spam`, `toxicity`, `cheating`, `general`).
+- Active warnings expire and decay after a configurable duration (default: `decayDuration: 30d`).
+- Historical records remain in the database for auditing via `/history <player>`.
+
+---
+
+## Auto-Escalation Ladders
+
+In `punishment/config.yml`, server owners can configure automated escalation ladders per warning category. When a player accumulates active warnings within that category, punishments are executed automatically:
+
+```yaml title="punishment/config.yml"
+warn:
+  categories:
+    toxicity:
+      decayDuration: "30d"
+      escalation:
+        1:
+          action: "WARN_ONLY"
+        2:
+          action: "MUTE"
+          duration: "1h"
+          reason: "Repeated Toxicity (Warning 2)"
+        3:
+          action: "MUTE"
+          duration: "1d"
+          kick: true
+          reason: "Repeated Toxicity (Warning 3)"
+        4:
+          action: "TEMPBAN"
+          duration: "3d"
+          reason: "Excessive Toxicity (Warning 4)"
+```
+
+### Automatic Sanction Rollback on Unwarn
+:::tip[Smart Rollback]
+If a staff member revokes a warning using `/unwarn`, NookureStaff tracks the specific sanction triggered by that escalation step and automatically pardons it!
+:::
+
+---
+
+## Evidence Management
+Looking for mandatory evidence deadlines, `/evidence` commands, or S3 presigned uploads? See the dedicated **[Evidence & S3 Uploads](/nookure-staff/features/evidence/)** guide.

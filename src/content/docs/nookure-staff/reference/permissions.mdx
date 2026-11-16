@@ -1,0 +1,111 @@
+---
+title: Permissions Reference
+description: Complete reference table for all NookureStaff permission nodes.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+This page documents all permission nodes available in NookureStaff, organized by module.
+
+---
+
+## Core & Administration Permissions
+
+| Permission Node | Default | Description |
+|---|---|---|
+| `nookure.staff` | `op` | Base permission. Identifies player as a staff member and wraps them in `StaffPlayerWrapper`. |
+| `nookure.staff.admin` | `op` | Administrative permission. Grants access to `/nkstaff reload` and configuration changes. |
+| `nookure.staff.mode` | `op` | Grants access to `/staff` to toggle Staff Mode. |
+| `nookure.staff.build` | `op` | Allows placing and breaking blocks while in Staff Mode. |
+| `nookure.staff.actionbar` | `op` | Displays the staff telemetry HUD on the player's action bar. |
+| `nookure.staff.mode.commands.bypass`| `op` | Bypasses commands blocked in `staff-mode-blocked-commands.yml`. |
+| `nookure.staff.staffchat` | `op` | Access to `/staffchat` and reading internal staff communications. |
+| `nookure.staff.chatchannel` | `op` | Access to `/staff channel` to change default chat destination. |
+| `nookurestaff.staff.list` | `op` | Access to `/staff list` GUI. |
+
+---
+
+## Vanish, Freeze & Inspection
+
+| Permission Node | Default | Description |
+|---|---|---|
+| `nookure.staff.vanish` | `op` | Access to toggle vanish mode via `/vanish` or `/v`. |
+| `nookure.staff.vanish.see` | `op` | Allows seeing other vanished staff members. |
+| `nookure.staff.freeze` | `op` | Access to `/freeze` and `/freezechat`. |
+| `nookure.staff.freeze.bypass` | `op` | Immunity from being frozen by staff members. |
+| `nookure.staff.invsee` | `op` | Access to `/staff invsee` to inspect player inventories. |
+| `nookure.staff.invsee.modify` | `op` | Allows modifying, taking, or adding items during `/staff invsee`. |
+| `nookure.staff.enderchest` | `op` | Access to `/staff enderchest`. |
+| `nookure.staff.enderchest.modify` | `op` | Allows editing items in player ender chests. |
+| `nookure.staff.player-list` | `op` | Access to `/player-list` GUI. |
+| `nookure.staff.players.actions` | `op` | Access to the Shift + Right-Click Actions GUI. |
+
+---
+
+## Sanctions & Moderation
+
+| Permission Node | Default | Description |
+|---|---|---|
+| `nookure.staff.ban` | `op` | Access to `/ban`. |
+| `nookure.staff.tempban` | `op` | Access to `/tempban`. |
+| `nookure.staff.ipban` | `op` | Access to `/ipban`. |
+| `nookure.staff.unban` | `op` | Access to `/unban`. |
+| `nookure.staff.mute` | `op` | Access to `/mute`. |
+| `nookure.staff.tempmute` | `op` | Access to `/tempmute`. |
+| `nookure.staff.ipmute` | `op` | Access to `/ipmute`. |
+| `nookure.staff.unmute` | `op` | Access to `/unmute`. |
+| `nookure.staff.warn` | `op` | Access to `/warn`. |
+| `nookure.staff.unwarn` | `op` | Access to `/unwarn`. |
+| `nookure.staff.kick` | `op` | Access to `/kick`. |
+| `nookure.staff.history` | `op` | Access to view player punishment history via `/history`. |
+| `nookure.staff.punishments.see` | `op` | Allows viewing public sanction broadcasts. |
+| `nookure.staff.punishments.see.silent`| `op` | Allows viewing silent sanction broadcasts (`-s`). |
+| `nookure.staff.punishments.pardon.others` | `op` | Allows pardoning sanctions created by other staff members. |
+| `nookure.staff.punishment.bypass` | `false` | Complete immunity from being banned, muted, warned, or kicked. |
+| `nookure.staff.evidence` | `op` | Access to `/evidence` to attach and view sanction evidence. |
+| `nookure.staff.evidence.admin` | `op` | Administrative permission to delete and manage evidence attachments. |
+| `nookure.staff.evidence.remove.others` | `op` | Allows removing evidence attachments created by other staff members. |
+| `nookure.staff.evidence.exempt` | `false` | Exempts staff rank from the Mandatory Evidence Policy deadline. |
+| `nookure.staff.dupeip` | `op` | Access to `/dupeip` to inspect linked alternate accounts. |
+| `nookure.staff.dupeip.approve` | `op` | Allows approving or revoking alt account relationships. |
+| `nookure.staff.dupeip.notify` | `op` | Receives automatic alt account notifications on player join. |
+
+---
+
+## Notes & Rollback
+
+| Permission Node | Default | Description |
+|---|---|---|
+| `nookure.staff.notes` | `op` | Access to `/note` and `/note inventory`. |
+| `nookure.staff.notes.add` | `op` | Allows adding notes. |
+| `nookure.staff.notes.remove` | `op` | Allows deleting notes. |
+| `nookure.staff.notes.list` | `op` | Allows viewing notes in chat. |
+| `nookure.staff.notes.edit` | `op` | Allows toggling show-on-join status. |
+| `nookure.staff.notes.admin` | `op` | Allows creating and viewing `adminOnly` notes. |
+| `nookure.staff.rollback` | `op` | Access to parent `/rollback` command. |
+| `nookure.staff.rollback.view` | `op` | Access to view snapshot history and open the preview GUI. |
+| `nookure.staff.rollback.restore` | `op` | Allows executing `/rollback restore`. |
+| `nookure.staff.rollback.take` | `op` | Allows duplicating items directly from snapshot preview GUIs. |
+| `nookure.staff.rollback.admin` | `op` | Access to `/rollback purge`. |
+
+---
+
+## Hotbar Items & Integrations
+
+| Permission Node | Default | Description |
+|---|---|---|
+| `nookurestaff.item.randomteleport` | `op` | Right-click to trigger Random Teleport item. |
+| `nookurestaff.item.freeze` | `op` | Right-click to trigger Freeze item. |
+| `nookurestaff.item.enderchest` | `op` | Right-click to trigger Ender Chest item. |
+| `nookurestaff.item.vanish` | `op` | Right-click to trigger Vanish item. |
+| `nookurestaff.item.invsee` | `op` | Right-click to trigger InvSee item. |
+| `nookurestaff.item.nightvision` | `op` | Right-click to trigger Night Vision item. |
+| `nookurestaff.item.thru` | `op` | Right-click to trigger Thru Compass. |
+| `nookure.staff.actions.view` | `op` | Allows querying action logs. |
+| `nookure.staff.akko` | `op` | Access to `/akko` WebSocket parent command. |
+| `nookure.staff.akko.connect` | `op` | Access to `/akko connect`. |
+| `nookure.staff.akko.disconnect` | `op` | Access to `/akko disconnect`. |
+| `nookure.staff.akko.auth` | `op` | Access to `/akko auth`. |
+| `nookure.staff.iplookup` | `op` | Permits viewing player IP addresses in Akko sessions. |
+| `nookure.staff.helpop` | `true` | Allows regular players to execute `/helpop`. |
+| `nookure.staff.helpop.receive` | `op` | Allows staff to receive `/helpop` notifications. |

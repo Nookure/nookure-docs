@@ -1,0 +1,64 @@
+---
+title: Hotbar Items & Custom Actions
+description: Configuring built-in moderation items and creating custom command hotbar items in NookureStaff.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+When a staff member enters Staff Mode, their inventory is replaced with a customized hotbar defined in `plugins/NookureStaff/items.yml`. NookureStaff ships with 7 pre-configured moderation tools and an engine for creating custom command items.
+
+---
+
+## Default Built-in Items
+
+| Slot | Item Type | Material | Default Name | Permission Node | Functionality |
+|---|---|---|---|---|---|
+| **0** | `RANDOM_PLAYER_TELEPORT` | `ENDER_PEARL` | `<green>Random Teleport</green>` | `nookurestaff.item.randomteleport` | Teleports staff to a random online player. |
+| **1** | `FREEZE` | `BLAZE_ROD` | `<aqua>Freeze Player</aqua>` | `nookurestaff.item.freeze` | Right-clicking a player freezes or unfreezes them. |
+| **3** | `ENDER_CHEST` | `ENDER_CHEST` | `<purple>Ender Chest</purple>` | `nookurestaff.item.enderchest` | Opens target player's live ender chest. |
+| **4** | `VANISH` | `ENDER_EYE` | `<gray>Vanish Toggle</gray>` | `nookurestaff.item.vanish` | Toggles vanish mode on right-click. |
+| **5** | `INVSEE` | `CHEST` | `<gold>Inspect Inventory</gold>` | `nookurestaff.item.invsee` | Opens target player's live survival inventory. |
+| **7** | `NIGHT_VISION` | `POTION` | `<blue>Night Vision</blue>` | `nookurestaff.item.nightvision` | Toggles infinite night vision effect. |
+| **8** | `THRU` | `COMPASS` | `<red>Thru Compass</red>` | `nookurestaff.item.thru` | Teleports through the targeted solid wall or barrier. |
+
+---
+
+## Custom Items Engine
+
+You can add an unlimited number of custom items to `items.yml` to trigger commands on right-click.
+
+### Execution Types
+
+When defining a custom item, set `executionType` to one of the following:
+
+- **`COMMAND_AS_PLAYER`**: Runs the command as the staff member executing the action.
+- **`COMMAND_AS_CONSOLE`**: Runs the command via server console (useful for elevated administrative actions).
+- **`COMMAND_TARGET_AS_PLAYER`**: Right-clicking a player replaces `{target}` with the targeted player's username and runs the command as the staff member.
+- **`COMMAND_TARGET_AS_CONSOLE`**: Right-clicking a player replaces `{target}` and executes the command from console.
+
+### Example Custom Item Configuration
+
+```yaml title="items.yml"
+customItems:
+  cps_check:
+    slot: 2
+    material: "CLOCK"
+    name: "<yellow>CPS Check</yellow>"
+    lore:
+      - "<gray>Right click a player to check</gray>"
+      - "<gray>their combat telemetry.</gray>"
+    permission: "nookurestaff.item.custom.cps"
+    executionType: COMMAND_TARGET_AS_CONSOLE
+    command: "anticheat cps {target}"
+    cooldown: 5 # Cooldown in seconds between clicks
+
+  reports_menu:
+    slot: 6
+    material: "BOOK"
+    name: "<gold>Open Reports</gold>"
+    lore:
+      - "<gray>Click to view pending reports.</gray>"
+    permission: "nookurestaff.item.custom.reports"
+    executionType: COMMAND_AS_PLAYER
+    command: "reports gui"
+```

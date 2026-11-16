@@ -1,0 +1,71 @@
+---
+title: NookureStaff vs NookureStaff+
+description: Feature comparison between the free open-source NookureStaff edition and the paid NookureStaff+ edition.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+**NookureStaff** is available in two editions:
+- **NookureStaff (Free / Open-Source)**: Includes the core staff moderation toolkit (Staff Mode, Hotbar Items, Vanish & Glow, Freeze & Screenshare, Live InvSee/Enderchest, Player List & Notes, Staff Chat, and Multi-Server Synchronization).
+- **NookureStaff+ (Paid Edition)**: Extends NookureStaff with enterprise-grade moderation, auditing, recovery, caching, and web management features.
+
+---
+
+## Comparison Table
+
+| Feature / Module | NookureStaff (Free) | NookureStaff+ (Paid) |
+|---|---|---|
+| **Staff Mode & Custom Hotbar Items** | Included | Included |
+| **Vanish, Glow & TAB Integration** | Included | Included |
+| **Freeze & Screenshare (`/freeze`, `/freezechat`)** | Included | Included |
+| **Live InvSee & Ender Chest (`/staff invsee`)** | Included | Included |
+| **Player List, Actions GUI & Notes (`/note`)** | Included | Included |
+| **Staff Chat & HelpOp** | Included | Included |
+| **Multi-Server Sync (Redis, Encrypted PM, MySQL)** | Included | Included |
+| **Web Viewer (Beta) via Akko WebSockets** | Not included | **Included** |
+| **Punishments & Sanctions Suite** | Not included | **Included** |
+| **Alt Account Detection & Approvals (`/dupeip`)** | Not included | **Included** |
+| **Mandatory Evidence Policy & S3 Uploads (`/evidence`)** | Not included | **Included** |
+| **Inventory Rollback Engine (`/rollback`)** | Not included | **Included** |
+| **Actions (Action Logger)** | Not included | **Included** |
+| **High-Performance Cache Layer (Caffeine & Redis)** | Not included | **Included** |
+| **PlaceholderAPI in Staff Chat & Broadcasts** | Not included | **Included** |
+| **GlitchTip Automatic Error Reporting** | Not included | **Included** |
+
+---
+
+## What's Included in NookureStaff+
+
+### 1. Web Viewer (Beta)
+Connects your Minecraft servers to the **Akko** real-time WebSocket web dashboard:
+- **Live Server Telemetry**: Streams TPS, MSPT, RAM usage, CPU load, and online staff/player states.
+- **Remote Moderation & Auditing**: Query action logs and punishment history directly from the browser.
+- **Remote Sanctions & Evidence**: Issue punishments, attach evidence, and receive real-time sanction broadcasts over WebSockets.
+- **Permission-Aware Multicast & Auth**: `/akko auth <key>` session authentication with permission-grouped packet broadcasting.
+
+### 2. Punishments & Sanctions Suite
+A complete, network-ready moderation framework:
+- **Full Sanction Types**: Permanent and temporary Bans, IP-Bans, Mutes, IP-Mutes, Warnings, and Kicks with silent (`-s`) support and Velocity proxy pre-login enforcement.
+- **Interactive `/punish` GUI**: Visual player selector, sanction type menu, material-icon templates, and confirmation dialogs to prevent accidental sanctions.
+- **Warning Auto-Escalation**: Categorized warnings with decay timers, automatic escalation ladders, and smart sanction rollback on `/unwarn`.
+- **Mandatory Evidence Policy & S3 Uploads**: Rank-based evidence deadlines with auto-pardon enforcement, `/evidence` management, and presigned URL uploads for AWS S3, MinIO, and Cloudflare R2.
+- **Alt Account Management (`/dupeip`)**: Automatic IP-to-account linking, clickable join alerts (`[Approve]` / `[Ban]`), and staff approval workflows.
+- **Granular Pardon & Protection**: Separate permissions for pardoning or removing evidence created by other staff (`nookure.staff.punishments.pardon.others`, `nookure.staff.evidence.remove.others`), plus self/staff IP-punish protection.
+
+### 3. Inventory Rollback
+Automated snapshot and recovery system to protect players from bugs, rollbacks, or unfair deaths:
+- **Automatic Triggers**: Captures GZIP-compressed snapshots on `DEATH`, `JOIN`, `QUIT`, `WORLD_CHANGE`, `/clear`, and staff inventory edits (`STAFF_MODIFIED`).
+- **Categories & Preview GUI**: Browse snapshots by trigger category, inspect items/stats, and duplicate items directly (`/rollback preview`).
+- **6 Restoration Modes**: Restore `ALL`, `INVENTORY_ONLY`, `ARMOR_ONLY`, `ENDER_CHEST_ONLY`, `EXPERIENCE_ONLY`, or `DROP_AT_LOCATION` (with per-server filtering).
+- **Automatic Background Purging**: Configurable retention days and periodic `InventorySnapshotPurgeTask` cleanup.
+
+### 4. Actions (Action Logger)
+Forensic database auditing for complete staff and player accountability:
+- **Granular Tracking**: Configurable logging for staff mode toggles, vanish changes, freezes, inventory inspections/modifications, rollbacks, note edits, alt lookups/approvals, and player chat/commands/logins.
+- **Async Virtual-Thread Persistence**: Stores actor, target, server name, coordinates, timestamp, and structured JSON metadata without blocking the main server thread.
+- **Evidence Tagging & Search**: Supports name search, pagination filters, and `--actions` linking from `/evidence add`.
+
+### 5. Infrastructure & Quality-of-Life Enhancements
+- **Distributed & Local Cache (`cache.yml`)**: Pluggable **Caffeine** (in-memory) and **Redis** (distributed) caching layer for active punishments, player metadata, and pre-login checks.
+- **PlaceholderAPI in Staff Chat & Broadcasts**: Full PlaceholderAPI parsing inside staff chat messages and sanction broadcasts.
+- **GlitchTip Error Reporting**: Opt-out automatic exception reporting for faster bug detection and resolution.

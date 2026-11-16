@@ -1,0 +1,105 @@
+---
+title: Network Synchronization
+description: Synchronize staff mode, vanish, punishments, and staff chat across your Minecraft network.
+---
+
+import { Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+When running a Minecraft network across multiple backend Paper servers and a Velocity proxy, staff actions (such as entering Staff Mode, toggling Vanish, sending Staff Chat, or issuing Sanctions) need to be propagated instantly.
+
+NookureStaff provides a flexible messaging bus configured in `plugins/NookureStaff/messenger.yml`.
+
+---
+
+## Messenger Modes Overview
+
+| Messenger Mode | Latency | Infrastructure Required | Encryption | Best For |
+|---|---|---|---|---|
+| **`REDIS`** | Sub-millisecond | Redis / Valkey server | Network-level | Large networks, instant pub/sub |
+| **`PM`** | Very low | Velocity proxy | **AES-256-GCM** | Networks without dedicated Redis |
+| **`MYSQL`** | Polling (~1-2s) | MySQL/MariaDB | Database SSL | Small networks / fallback |
+| **`NONE`** | N/A | None | N/A | Standalone single-server |
+
+---
+
+## 1. Redis Messenger (Recommended)
+
+Redis provides instant pub/sub event broadcasting across all Paper instances.
+
+```yaml title="plugins/NookureStaff/messenger.yml"
+# The configuration for the Redis messenger.
+redis:
+  # The address of the Redis server (e.g. `localhost`).
+  address: localhost
+  # The port of the Redis server (1-65535).
+  port: 6379
+  # The username to use when connecting to Redis (leave empty if not required).
+  username: ''
+  # The password to use when connecting to Redis (leave empty if not required).
+  password: ''
+  # The database index to use (0-15).
+  database: 0
+  # Connection pool size.
+  pool-size: 10
+  # Connection timeout in milliseconds.
+  timeout: 2000
+
+# Unique UUID that identifies this server instance across the network.
+# Ensure EACH server instance (backend servers and proxy) has a unique UUID.
+# DO NOT copy this same UUID across multiple servers.
+server-id: 234d8021-304f-4c55-888d-9c6aead99094
+
+# The type of messenger to use: REDIS, PM, MYSQL, or NONE.
+type: REDIS
+```
+
+---
+
+## 2. Velocity Plugin Messaging (`PM`)
+
+If you do not run a Redis server, you can route cross-server packets through your Velocity proxy using Paper-to-Velocity plugin messaging channels (`nkstaff:events` and `nkstaff:commands`).
+
+### Security & Encryption (`plugin-message.yml`)
+
+To prevent packet sniffing, spoofing, or player tampering, all plugin messaging packets are encrypted using **AES-256-GCM**.
+
+```yaml title="plugins/NookureStaff/plugin-message.yml"
+enabled: true
+
+# Base64-encoded encryption key for plugin messages, generated if not present, must be 128, 192, or 256 bits.
+# You should have the same key on all servers in the network.
+encryption-key: CczGNFl6AAyl7cIEDlnTd95MB3gMb+HDwijxTYiKw8k=
+
+# Security feature to prevent players from tampering with plugin messages.
+# If the plugin detects tampering, it will disconnect the player.
+player-tampering-detection: true
+
+# The message to send to the player when tampering is detected.
+player-tampering-detection-message: <red>Plugin message tampering detected!
+```
+
+:::caution[Encryption Key Requirement]
+The `encryption-key` must match exactly across all backend Paper servers and your Velocity proxy. If keys do not match, packets will fail decryption and be dropped with tamper warnings.
+:::
+
+---
+
+## 3. MySQL Polling Messenger (`MYSQL`)
+
+When neither Redis nor Plugin Messaging can be used, NookureStaff supports polling an internal SQL queue table via `SQLPollTaskLoader`:
+
+```yaml title="plugins/NookureStaff/messenger.yml"
+type: MYSQL
+server-id: 234d8021-304f-4c55-888d-9c6aead99094
+```
+
+The server periodically checks the message queue table for new events and broadcasts them locally.
+
+---
+
+## Proxy Punishment Enforcement
+
+On your Velocity proxy, `NookureStaff-Velocity` hooks into player logins (`PunishmentLoginListener`):
+- When a player connects to the proxy, their UUID and IP address are evaluated against the database.
+- If an active **Ban** or **IP-Ban** is detected, the player is rejected immediately at the proxy gate before ever establishing a connection to backend Paper servers.
+- Configured kick screens with MiniMessage support render the sanction reason, punisher, ID, and appeal URL directly to the user.

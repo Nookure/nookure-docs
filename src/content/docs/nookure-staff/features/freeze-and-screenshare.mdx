@@ -1,0 +1,69 @@
+---
+title: Freeze & Screenshare System
+description: Freeze suspicious players, handle screen-sharing workflows, and auto-punish quitters with NookureStaff.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+The Freeze module lets staff members halt a suspect player during an investigation (such as screensharing, hack checks, or rule infractions).
+
+---
+
+## Freezing a Player (`/freeze`)
+
+```bash
+/freeze <player>
+```
+
+When a player is frozen:
+1. **Movement & Physics Cancelled**: Movement, jumping, falling, and teleportation are locked.
+2. **Interactions Blocked**: Breaking blocks, placing blocks, opening chests, dropping items, and attacking entities are disabled.
+3. **Chat Banner**: A repeating chat title/message informs the player they are under investigation, instructs them to join your Discord or voice channel, and shows a remaining countdown timer.
+
+:::note[Bypass Immunity]
+Players holding `nookure.staff.freeze.bypass` cannot be frozen.
+:::
+
+---
+
+## Countdown Timer & Pause Functionality
+
+In `config.yml`, configure `freeze.freezeTimer` (default 300 seconds / 5 minutes).
+
+- The frozen player has until the timer hits 0 to cooperate.
+- If the countdown expires before the player is unfrozen, NookureStaff automatically executes configured commands (e.g., `/ban {player} 30d Refusing Screenshare`).
+
+### Pausing the Countdown
+If the suspect is cooperating (e.g. joining Discord or sharing screens) and needs extra time, staff can pause the timer:
+```bash
+/freeze <player> pause
+```
+Running the command again unpauses the countdown.
+
+---
+
+## Combatting Combat Loggers / Quitting Under Freeze
+
+If a frozen player disconnects while under investigation, NookureStaff provides interactive exit handling via `config.yml`:
+
+- **Interactive Staff Notification**:
+  When the player leaves, staff members receive an interactive clickable prompt in chat:
+  ```text
+  [!] Player Steve disconnected while frozen!
+  [Click to Punish: ✔]   [Click to Dismiss: ✖]
+  ```
+- **Executing the Punishment**:
+  - Clicking `[✔]` executes `/freeze /exec <uuid>`, automatically issuing the configured evasion punishment (e.g. 30-day ban).
+  - Clicking `[✖]` executes `/freeze /remove <uuid>`, dismissing the pending sanction without punishing the player.
+
+---
+
+## Isolated Freeze Chat (`/freezechat`)
+
+To communicate privately with the suspect without public chat distractions or letting other players read the screenshare instructions:
+
+```bash
+/freezechat <player> <message>
+```
+
+Only the target player and staff members with the freeze permission can see messages sent through this channel.

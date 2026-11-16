@@ -1,0 +1,87 @@
+---
+title: Staff Mode
+description: Complete guide to NookureStaff Staff Mode, protective mechanics, silent interactions, and blocked commands.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+**Staff Mode** isolates staff members from ordinary gameplay, preventing accidental or deliberate item drops, damage, or world tampering, while granting rapid moderation tools.
+
+Toggle Staff Mode using:
+```bash
+/staff
+```
+
+:::note[Required Permissions]
+To enter Staff Mode, a player must possess both the base staff identifier permission `nookure.staff` and `nookure.staff.mode`.
+:::
+
+---
+
+## Protective Mechanics & Restrictions
+
+When a staff member enters Staff Mode, NookureStaff enforces strict gameplay boundaries:
+
+1. **Inventory Preservation**:
+   - The player's survival inventory, armor, and offhand items are safely saved into memory and cleared.
+   - Configured staff items from `items.yml` are loaded into the player's hotbar.
+   - When exiting Staff Mode, the original inventory is restored down to the exact NBT data and slot locations.
+2. **Item & Inventory Lock**:
+   - Dropping items (`PlayerDropItemEvent`) is cancelled.
+   - Picking up items (`EntityPickupItemEvent`) is cancelled.
+   - Swapping offhand items and moving items in inventories are cancelled.
+3. **Damage & Entity Protection**:
+   - Staff members cannot take damage from any source (PvP, fall, environmental).
+   - Staff members cannot attack entities or players.
+   - Hostile monsters ignore staff members and will not target them (`EntityTargetLivingEntityEvent`).
+4. **Environment & Spawners**:
+   - Monster spawners do not activate in the proximity of vanished staff members (Paper 1.21+).
+   - Advancement criterion grants are blocked.
+   - Food level changes (hunger loss) are cancelled.
+
+---
+
+## Staff Mode Utilities
+
+### Silent Chest Viewing
+Staff members can inspect chests, barrels, shulker boxes, and ender chests without triggering open/close animations or chest creaking sounds.
+- Configurable in `config.yml`: `staffMode.silentChestOpen: true`.
+
+### Previous Location Teleportation
+When exiting Staff Mode, staff members can automatically be teleported back to the exact location they were at prior to enabling staff mode.
+- Configurable in `config.yml`: `staffMode.teleportToPreviousLocation: true`.
+
+### Night Vision & Custom Effects
+- Staff mode automatically applies Night Vision so staff can inspect dark caves or unlit builds.
+- Additional potion effects (e.g., Speed, Jump Boost) can be specified under `staffMode.customPotionEffects`.
+
+### Action Bar HUD
+Staff members receive real-time telemetry on their action bar showing:
+- Vanish status (`{vanished}`)
+- Current chat destination channel (`{staffChat}`)
+- Real-time server TPS (`{tps}`)
+- Toggle permission: `nookure.staff.actionbar`
+
+---
+
+## Blocked Commands in Staff Mode
+
+To prevent abuse or accidental command executions (e.g. running economy or gameplay commands while in staff mode), commands can be restricted in `staff-mode-blocked-commands.yml`:
+
+```yaml title="staff-mode-blocked-commands.yml"
+blockedCommands:
+  - "pay"
+  - "trade"
+  - "ah"
+  - "auction"
+  - "tpa"
+  - "tpahere"
+
+message: "<red>You cannot execute this command while in Staff Mode!</red>"
+```
+
+### Bypass Permission
+Staff administrators can bypass blocked commands by holding the permission:
+```text
+nookure.staff.mode.commands.bypass
+```

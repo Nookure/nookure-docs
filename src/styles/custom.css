@@ -1,0 +1,123 @@
+/* Nookure Branding Theme (#ff4040) for Starlight - Self-Hosted Fonts */
+
+@font-face {
+	font-family: 'Geist';
+	src: url('/fonts/Geist-Variable.woff2') format('woff2');
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Geist Mono';
+	src: url('/fonts/GeistMono-Variable.woff2') format('woff2');
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Geist Serif';
+	src: url('/fonts/GeistSerifVF.woff2') format('woff2');
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* Typography & Dark mode */
+:root {
+	--sl-font: 'Geist', system-ui, -apple-system, sans-serif;
+	--sl-font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+	/* Nookure Red Accent */
+	--sl-color-accent-low: #3d0f0f;
+	--sl-color-accent: #ff4040;
+	--sl-color-accent-high: #ffb3b3;
+	--sl-color-text-accent: #ff5c5c;
+
+	/* Neutral Charcoal Surfaces (Dark Mode) */
+	--sl-color-bg: #111114;
+	--sl-color-bg-nav: #141418;
+	--sl-color-bg-sidebar: #141418;
+	--sl-color-gray-6: #1c1c21;
+	--sl-color-gray-5: #27272e;
+	--sl-color-hairline-shade: #222229;
+}
+
+/* Light mode */
+:root[data-theme='light'] {
+	--sl-color-accent-low: #ffe5e5;
+	--sl-color-accent: #ff4040;
+	--sl-color-accent-high: #8c1212;
+	--sl-color-text-accent: #d92626;
+
+	/* Clean Neutral Light Surfaces */
+	--sl-color-bg: #ffffff;
+	--sl-color-bg-nav: #fafafa;
+	--sl-color-bg-sidebar: #fafafa;
+	--sl-color-gray-6: #f4f4f6;
+	--sl-color-gray-5: #e4e4e7;
+	--sl-color-hairline-shade: #e4e4e7;
+}
+
+/* Headings, Page Titles & Card Headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.site-title,
+.hero h1,
+.card .title,
+.group-label .large {
+	font-family: 'Geist Serif', Georgia, serif;
+	letter-spacing: -0.015em;
+}
+
+/* Hero logo badge with Nookure accent background, 3D tilt & float */
+@keyframes hero-float {
+	0%,
+	100% {
+		transform: perspective(900px) rotateY(-12deg) rotateX(8deg) translateY(0px);
+	}
+	50% {
+		transform: perspective(900px) rotateY(-9deg) rotateX(10deg) translateY(-12px);
+	}
+}
+
+.hero img {
+	background-color: var(--sl-color-accent);
+	padding: 2.25rem;
+	border-radius: 2rem;
+	box-sizing: border-box;
+	box-shadow:
+		12px 24px 50px rgba(255, 64, 64, 0.3),
+		0 10px 25px rgba(0, 0, 0, 0.25);
+	animation: hero-float 5s ease-in-out infinite;
+	transition: box-shadow 0.3s ease;
+}
+
+.hero img:hover {
+	box-shadow:
+		14px 30px 60px rgba(255, 64, 64, 0.4),
+		0 14px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Primary action button polish */
+.sl-link-button.primary {
+	background-color: #ff4040;
+	border-color: #ff4040;
+	color: #ffffff;
+}
+
+.sl-link-button.primary:hover {
+	background-color: #e63535;
+	border-color: #e63535;
+}
+
+/* Navbar logo size */
+.site-title img {
+	height: 1.75rem;
+	width: auto;
+}

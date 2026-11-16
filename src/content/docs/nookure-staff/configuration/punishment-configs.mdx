@@ -1,0 +1,167 @@
+---
+title: Punishments Configurations
+description: Complete reference for punishment/config.yml and punishment/messages.yml with official comments.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The punishments module contains dedicated configuration files located in the `plugins/NookureStaff/punishment/` directory.
+
+---
+
+## `punishment/config.yml`
+
+```yaml title="plugins/NookureStaff/punishment/config.yml"
+# Default reasons when none is provided for sanctions.
+default-reasons:
+  # Default reason when none is provided for bans.
+  ban: Violating server rules
+  # Default reason when none is provided for mutes.
+  mute: Violating chat rules
+  # Default reason when none is provided for warnings.
+  warn: General warning
+  # Default reason when none is provided for kicks.
+  kick: Kicked by staff member
+
+# Predefined punishment templates organized by sanction category/type.
+# Structure: templates -> sanction type (e.g. ban, ipban, mute, ipmute, kick) -> template key -> reason and duration.
+# Staff can provide a template key and it will automatically apply the configured reason and duration.
+# Note: Warnings are configured separately under 'warn.categories'.
+templates:
+  ban:
+    cheating:
+      name: Cheating / Hacks
+      material: DIAMOND_SWORD
+      reason: Use of unfair advantages / illegal modifications (cheats)
+      duration: 30d
+    fly:
+      name: Movement Hacks
+      material: FEATHER
+      reason: Movement hacks (Fly / Speed / NoFall)
+      duration: 7d
+  mute:
+    spam:
+      name: Spam
+      material: PAPER
+      reason: Spamming or flood in public chat
+      duration: 1h
+
+# Warning system configuration, default category, decay, and categories.
+warn:
+  # Default warning category when none is specified.
+  default-category: general
+
+  # Default duration before warnings expire / decay (e.g. 30d). Old warnings won't count towards category thresholds.
+  decay-duration: 30d
+
+  # Warning categories and their escalation ladders.
+  # Valid sanction string formats in the list:
+  #   - "tempmute <duration> [reason]"
+  #   - "mute [reason]"
+  #   - "tempban <duration> [reason]"
+  #   - "ban [reason]"
+  #   - "kick [reason]"
+  categories:
+    flood:
+      # Human-friendly display name of the category.
+      display-name: Chat Flood
+      # Material icon used in the template selector GUI.
+      material: WATER_BUCKET
+      # Default reason for warnings issued under this category.
+      reason: Chat flood / excessive repeated messages
+      # Map of warn count (e.g. 1, 2, 3...) to a list of sanctions to apply when reaching that count.
+      actions:
+        '1':
+          - tempmute 15m Chat flood (1st offense)
+        '2':
+          - tempmute 1h Chat flood (2nd offense)
+
+# Mandatory evidence requirement policy by staff tier and sanction type.
+evidence-requirement:
+  # Whether the mandatory evidence policy is enabled.
+  enabled: true
+
+  # Configured staff tiers mapped to staff primary groups (obtained via PermissionHook)
+  # and their respective evidence deadlines.
+  tiers:
+    moderator:
+      # Primary group name (e.g. admin, moderator, helper). If omitted, the tier key in configuration is used.
+      group: moderator
+      # Optional list of alias primary groups that also map to this tier.
+      aliases:
+        - mod
+        - seniormod
+      # Evaluation priority. Higher priority tiers are checked first.
+      priority: 50
+      # Deadlines per sanction type. Formats: "30m", "1h", "24h", or "none"/"-1"/"exempt" for no evidence required.
+      deadlines:
+        BAN: 6h
+        TEMP_BAN: 6h
+        MUTE: 12h
+        WARN: 24h
+
+# If true, backend servers will not attempt to kick the player locally for BAN or KICK sanctions
+# when the server is connected behind a proxy, letting the proxy perform the network-wide disconnection.
+only-kick-from-proxy: false
+
+# S3-compatible object storage configuration for evidence uploads (AWS S3, MinIO, Cloudflare R2, etc.).
+s3:
+  # Whether S3-compatible evidence storage is enabled.
+  enabled: false
+  # S3 endpoint (e.g. https://s3.us-east-1.amazonaws.com or https://<accountid>.r2.cloudflarestorage.com)
+  endpoint: https://s3.us-east-1.amazonaws.com
+  # S3 region (e.g. us-east-1, auto, etc.)
+  region: us-east-1
+  # S3 bucket name
+  bucket: nookurestaff-evidence
+  # AWS/S3 Access Key ID
+  access-key: ''
+  # AWS/S3 Secret Access Key
+  secret-key: ''
+  # Use path-style access (http://endpoint/bucket/key) instead of virtual-hosted style (http://bucket.endpoint/key). Recommended for MinIO.
+  path-style-access: false
+  # Optional public/CDN URL prefix to view evidence directly (e.g. https://cdn.myserver.net). If empty, signed GET URLs are generated.
+  cdn-url: ''
+  # Maximum upload size allowed in bytes. Default: 52428800 (50 MB)
+  max-file-size-bytes: 52428800
+  # Presigned URL expiration in seconds for uploads (PUT/POST)
+  upload-url-expiration-seconds: 900
+  # Presigned URL expiration in seconds for private GET downloads
+  download-url-expiration-seconds: 3600
+
+# Configuration for /dupeip alt account detection, approval, and join notifications.
+dupe-ip:
+  # Whether staff members are automatically notified when a player joins with linked alt accounts.
+  notify-on-join: true
+  # Whether quick [Approve] / [Ban] action buttons are shown on join even when all linked accounts are already approved.
+  show-actions-when-all-approved: false
+  # IP addresses ignored when linking or alerting about alt accounts (e.g. unknown IP 0.0.0.0).
+  ignored-ips:
+    - 0.0.0.0
+```
+
+---
+
+## `punishment/messages.yml`
+
+Configures all broadcast strings, chat mutes, and login ban screens using MiniMessage formatting:
+
+```yaml title="plugins/NookureStaff/punishment/messages.yml"
+prefix: "<gradient:#ff5e62:#ff9966><b>[Staff]</b></gradient> "
+
+broadcast:
+  ban: "<red>Player <gold>{player}</gold> was banned by <gold>{punisher}</gold> for: <white>{reason}</white></red>"
+  silentBan: "<dark_gray>[SILENT]</dark_gray> <red>{player} was banned by {punisher} for: {reason}</red>"
+  mute: "<yellow>Player <gold>{player}</gold> was muted by <gold>{punisher}</gold> ({duration}) for: <white>{reason}</white></yellow>"
+
+loginScreen:
+  ban: |
+    <red><b>YOU ARE BANNED FROM THIS SERVER!</b></red>
+    
+    <gray>Sanction ID:</gray> <white>#{id}</white>
+    <gray>Reason:</gray> <yellow>{reason}</yellow>
+    <gray>Banned by:</gray> <white>{punisher}</white>
+    <gray>Expires:</gray> <white>{expiration}</white>
+    
+    <aqua>Appeal your ban at: <underlined>https://discord.gg/nookure</underlined></aqua>
+```

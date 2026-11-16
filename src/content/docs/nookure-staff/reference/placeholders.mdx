@@ -1,0 +1,33 @@
+---
+title: PlaceholderAPI Reference
+description: Complete placeholder reference for the %nkstaff_*% PlaceholderAPI expansion.
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+NookureStaff provides a built-in PlaceholderAPI (PAPI) expansion allowing scoreboards, tablists, action bars, and chat plugins to display staff statistics and status conditions.
+
+---
+
+## Registered Placeholders
+
+| Placeholder | Return Type | Description |
+|---|---|---|
+| `%nkstaff_server_count%` | Integer | Total online player count, automatically **excluding** staff members currently in Staff Mode. |
+| `%nkstaff_staff_count%` | Integer | Total count of staff members currently online on the server. |
+| `%nkstaff_staff_mode%` | String (`true`/`false`) | Returns configured active/inactive string if the player is in Staff Mode. |
+| `%nkstaff_vanish%` | String (`true`/`false`) | Returns configured active/inactive string if the player is vanished. |
+| `%nkstaff_freeze%` | String (`true`/`false`) | Returns configured active/inactive string if the target player is frozen. |
+| `%nkstaff_glow_color%` | String (Hex / Code) | Returns the color code or hex string assigned to the staff member's glow rank. |
+
+---
+
+## Configuration
+
+The boolean string representations (`true` / `false` replacements) used by `%nkstaff_staff_mode%`, `%nkstaff_vanish%`, and `%nkstaff_freeze%` can be customized in `plugins/NookureStaff/messages.yml`:
+
+```yaml title="messages.yml"
+placeholder:
+  trueValue: "<green>Enabled</green>"
+  falseValue: "<red>Disabled</red>"
+```

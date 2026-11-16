@@ -1,0 +1,77 @@
+---
+title: Installation
+description: Requirements, installation steps, and platform compatibility for NookureStaff.
+---
+
+import { Steps, Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+This guide walks you through installing and initializing NookureStaff on your backend game servers and proxy gateways.
+
+---
+
+## System Requirements
+
+:::caution[Strict Requirements]
+NookureStaff is built for cutting-edge Java and Minecraft platforms. Please review the version requirements carefully.
+:::
+
+- **Java Runtime**: **Java 25** (source and bytecode compatibility require Java 25).
+- **Backend Server Platform**:
+  - **Paper 1.21+** (or modern forks maintaining Paper's modern plugin loader).
+  - :::danger[Spigot is NOT supported]
+    NookureStaff relies on Paper's modern `StaffPaperPluginLoader`, `paper-plugin.yml`, `AsyncChatEvent`, and async scheduler contracts. Standard Spigot or CraftBukkit servers cannot load this plugin.
+    :::
+- **Proxy Gateway (Optional for Networks)**:
+  - **Velocity 3.4.0+**
+  - :::note[BungeeCord Note]
+    BungeeCord is not supported. For network deployments, use Velocity.
+    :::
+- **Database Backend**:
+  - **SQLite**: Supported for single, standalone Paper servers.
+  - **MySQL / MariaDB**: Required for multi-server networks and Velocity proxy enforcement.
+
+---
+
+## Installation Steps
+
+<Tabs>
+  <TabItem label="Paper Server (Standalone)">
+    <Steps>
+      1. Ensure your server is running with **Java 25**.
+      2. Download the latest `NookureStaff-Paper-xxx.jar`.
+      3. Place the JAR file into your server's `plugins/` directory.
+      4. Start or restart the server. NookureStaff will generate its default folder at `plugins/NookureStaff/`.
+      5. Configure your settings in `plugins/NookureStaff/config.yml`.
+      6. Grant the base administration permission `nookure.staff.admin` to your administrator account.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Network Setup (Paper + Velocity)">
+    <Steps>
+      1. **Database Setup**: Create a shared MySQL or MariaDB database accessible by both your Velocity proxy and all Paper backend instances.
+      2. **Velocity Proxy**:
+         - Place `NookureStaff-Velocity-xxx.jar` into your proxy's `plugins/` directory.
+         - Start the proxy to generate `plugins/nookurestaff/velocity.yml`.
+         - Configure your MySQL database credentials in `velocity.yml`.
+      3. **Paper Backends**:
+         - Place `NookureStaff-Paper-xxx.jar` into each Paper server's `plugins/` folder.
+         - In `plugins/NookureStaff/config.yml`, configure the `database` section to connect to the same shared MySQL database.
+         - Set a unique `serverName` for each backend server (e.g., `survival-1`, `lobby`).
+      4. **Network Messenger**:
+         - In `plugins/NookureStaff/messenger.yml`, configure your synchronization bus (`REDIS`, `PM` for Velocity Plugin Messaging, or `MYSQL`). See the **[Choosing a Messenger](/nookure-staff/getting-started/network-sync/)** guide to pick the best option for your network.
+      5. Restart your proxy and backend servers.
+    </Steps>
+  </TabItem>
+</Tabs>
+
+---
+
+## Verifying Installation
+
+Join your server in-game and run:
+
+```bash
+/staff
+```
+
+Make sure your account has the required permissions (`nookure.staff` and `nookure.staff.mode`). If the plugin is installed and configured properly, you will enter Staff Mode and receive your configured staff hotbar items.
