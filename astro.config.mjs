@@ -71,6 +71,12 @@ export default defineConfig({
 							],
 						},
 						{
+							label: 'Migrations',
+							items: [
+								{ label: 'Migrating from LiteBans', slug: 'nookure-staff/migrations/litebans' },
+							],
+						},
+						{
 							label: 'Reference',
 							items: [
 								{ label: 'Commands', slug: 'nookure-staff/reference/commands' },

@@ -14,6 +14,7 @@ This page lists all commands provided by NookureStaff. Note that names and alias
 | Command | Subcommands | Aliases | Permission | Description |
 |---|---|---|---|---|
 | `/NookureStaff` | `reload` | `nkstaff`, `ns` | `nookure.staff.admin` | Main plugin command. `/nkstaff reload` reloads all configuration files. |
+| `/nkstaff migrate` | `litebans [--dry-run] [--active-only] [--source=auto\|api\|jdbc] [--batch-size=500]` | `ns migrate` | `nookure.staff.admin` | Migrates punishments, player history, and alt links from external plugins (LiteBans). |
 | `/staff` | *(none)* | *(none)* | `nookure.staff.mode` | Toggles Staff Mode. (Requires `nookure.staff`). |
 | `/staff list` | *(none)* | *(none)* | `nookurestaff.staff.list` | Opens GUI list of all online staff members. |
 | `/staff invsee` | `<player>` | *(none)* | `nookure.staff.invsee` | Inspects target player's inventory in real time. |

@@ -1,0 +1,119 @@
+---
+title: Migrating from LiteBans
+description: Step-by-step guide to migrating punishments, player history, and alt links from LiteBans to NookureStaff+.
+sidebar:
+  badge:
+    text: Plus
+    variant: danger
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**NookureStaff+** includes a built-in, asynchronous migration tool (`LiteBansMigrationService`) to import your existing **LiteBans** data directly into NookureStaff without downtime or manual SQL scripts.
+
+:::note[Upcoming Migration Sources]
+Support for migrating from **LibertyBans** is planned and will be added to this section in an upcoming update.
+:::
+
+---
+
+## What Gets Migrated
+
+- **Player History**: Creates or updates player records (`PlayerModel`) with UUIDs, usernames, and login metadata.
+- **Alt Account Links**: Imports IP-to-account relationships (`AltAccountLinkModel`) for `/dupeip`.
+- **All Sanction Types**:
+  - Permanent & Temporary **Bans** and **IP-Bans**
+  - Permanent & Temporary **Mutes** and **IP-Mutes**
+  - **Warnings**
+  - **Kicks**
+- **Safe Deduplication**: Automatically skips duplicate records and optionally skips expired/inactive sanctions (`--active-only`).
+
+---
+
+## Migration Sources (`--source`)
+
+NookureStaff supports three source modes when reading LiteBans data:
+
+| Source Mode | Behavior | When to Use |
+|---|---|---|
+| **`auto`** *(Default)* | Uses `LiteBansAPI` if the LiteBans plugin is loaded on the server; otherwise falls back to direct JDBC using `migrations.yml`. | Recommended for most setups. |
+| **`api`** | Queries `litebans.api.Database` from the running LiteBans plugin. | When LiteBans is currently running alongside NookureStaff. |
+| **`jdbc`** | Connects directly to LiteBans' MySQL/MariaDB or SQLite database using `plugins/NookureStaff/migrations.yml`. | When LiteBans has already been removed or is on an external database. |
+
+---
+
+## Configuration (`migrations.yml`)
+
+If you are using `jdbc` (or `auto` without LiteBans loaded), configure your LiteBans database credentials in `plugins/NookureStaff/migrations.yml`:
+
+```yaml title="plugins/NookureStaff/migrations.yml"
+# Configuration for migrating punishments, player history, and alt links from LiteBans.
+litebans:
+  # Database host for direct JDBC migration when LiteBans plugin is not loaded.
+  # Ignored if 'jdbc-url' is specified.
+  host: localhost
+
+  # Database port (usually 3306 for MySQL/MariaDB).
+  port: 3306
+
+  # LiteBans database name.
+  database: litebans
+
+  # Database username.
+  username: root
+
+  # Database password.
+  password: ''
+
+  # Table prefix used by LiteBans (default: litebans_).
+  table-prefix: litebans_
+
+  # Optional custom JDBC URL (overrides host, port, and database).
+  # Examples:
+  #   jdbc:mysql://localhost:3306/litebans?useSSL=false
+  #   jdbc:sqlite:plugins/LiteBans/litebans.db
+  jdbc-url: ''
+
+  # Number of records processed per database transaction batch.
+  batch-size: 500
+```
+
+:::tip[Migrating from LiteBans SQLite]
+If your LiteBans instance uses SQLite, set `jdbc-url` to point to the SQLite file (e.g., `jdbc:sqlite:plugins/LiteBans/litebans.db`).
+:::
+
+---
+
+## Command & Flags
+
+Requires permission: `nookure.staff.admin`
+
+```bash
+/nkstaff migrate litebans [--dry-run] [--active-only] [--source=auto|api|jdbc] [--batch-size=500]
+```
+
+| Flag | Description |
+|---|---|
+| **`--dry-run`** | Simulates the entire migration and prints the summary report without writing any changes to the NookureStaff database. |
+| **`--active-only`** | Only imports currently active bans, mutes, and warnings, skipping expired or pardoned history. |
+| **`--source=auto\|api\|jdbc`** | Overrides the data source mode (`auto`, `api`, or `jdbc`). |
+| **`--batch-size=<n>`** | Overrides the number of records processed per database transaction batch (default: `500`). |
+
+---
+
+## Recommended Migration Steps
+
+<Steps>
+  1. **Back up your databases**: Always take a backup of both your LiteBans and NookureStaff databases before migrating.
+  2. **Configure `migrations.yml`**: If LiteBans is not loaded on the server, fill in your MySQL credentials or `jdbc-url` in `plugins/NookureStaff/migrations.yml` and run `/nkstaff reload`.
+  3. **Run a Dry Run**: Test the connection and preview the import counts without modifying your database:
+     ```bash
+     /nkstaff migrate litebans --dry-run
+     ```
+  4. **Run the Migration**: Execute the migration (add `--active-only` if you do not want expired history):
+     ```bash
+     /nkstaff migrate litebans
+     ```
+  5. **Review the Summary Report**: Once complete, NookureStaff outputs the counts of created/updated players, alt links, bans, mutes, warnings, kicks, skipped duplicates, and errors, and automatically invalidates punishment caches.
+  6. **Remove LiteBans**: Once verified, remove the LiteBans JAR from your `plugins/` folder and restart your server/proxy.
+</Steps>
