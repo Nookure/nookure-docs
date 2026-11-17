@@ -45,18 +45,34 @@ When using Redis or Velocity Plugin Messaging, these network packet events are d
 
 ## Registering an Event Listener
 
+Annotate listener methods with `@NookSubscribe` (from `com.nookure.staff.api.event.NookSubscribe`) and register the listener instance with `EventManager`:
+
 ```java
-import com.nookure.staff.api.event.EventHandler;
+import com.nookure.staff.api.NookureStaff;
+import com.nookure.staff.api.event.EventManager;
+import com.nookure.staff.api.event.EventPriority;
+import com.nookure.staff.api.event.NookSubscribe;
 import com.nookure.staff.api.event.staff.StaffModeUpdatedEvent;
+import org.bukkit.Bukkit;
 
 public class MyStaffListener {
 
-    @EventHandler
+    @NookSubscribe(priority = EventPriority.NORMAL)
     public void onStaffModeToggle(StaffModeUpdatedEvent event) {
-        boolean isNowInStaffMode = event.isStaffMode();
-        var staffPlayer = event.getPlayer();
-        
+        boolean isNowInStaffMode = event.staffMode();
+        var staffPlayer = event.player();
+
         System.out.println(staffPlayer.getName() + " staff mode is now: " + isNowInStaffMode);
     }
+}
+```
+
+Register your listener in your plugin's `onEnable()`:
+
+```java
+NookureStaff staffApi = Bukkit.getServicesManager().load(NookureStaff.class);
+if (staffApi != null) {
+    EventManager eventManager = staffApi.getInjector().getInstance(EventManager.class);
+    eventManager.registerListener(new MyStaffListener());
 }
 ```
