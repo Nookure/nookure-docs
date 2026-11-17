@@ -7,6 +7,15 @@ import { ClientRouter } from 'astro:transitions';
 <ClientRouter />
 
 <script is:inline>
+	let sidebarScrollTop = 0;
+
+	document.addEventListener('astro:before-swap', () => {
+		const sidebar = document.getElementById('starlight__sidebar');
+		if (sidebar) {
+			sidebarScrollTop = sidebar.scrollTop;
+		}
+	});
+
 	document.addEventListener('astro:after-swap', () => {
 		const storedTheme =
 			typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
@@ -14,12 +23,31 @@ import { ClientRouter } from 'astro:transitions';
 			storedTheme ||
 			(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
 		document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+
+		const sidebar = document.getElementById('starlight__sidebar');
+		if (sidebar) {
+			sidebar.scrollTop = sidebarScrollTop;
+		}
 	});
 </script>
 
 <style is:global>
 	::view-transition-group(root) {
 		animation-duration: 180ms;
+	}
+
+	@media (min-width: 50rem) {
+		#starlight__sidebar {
+			view-transition-name: sidebar;
+		}
+
+		::view-transition-old(sidebar) {
+			display: none;
+		}
+
+		::view-transition-new(sidebar) {
+			animation: none;
+		}
 	}
 
 	main {
