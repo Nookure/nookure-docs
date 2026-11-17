@@ -1,49 +1,120 @@
 ---
 title: Developer API Overview
-description: Getting started with NookureStaff API, dependency management, and architecture.
+description: Getting started with NookureStaff API, repository setup (Releases & Snapshots), and accessing the Guice Injector.
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
+import NookureStaffVersionFetcher from '../../../../components/NookureStaffVersionFetcher.astro';
 
-NookureStaff provides a clean API module (`NookureStaff-API`) designed to allow other plugins or standalone addons to interact with staff wrappers, subscribe to event buses, and manage punishments.
+NookureStaff provides a clean API module (`NookureStaff-API`) designed to allow external plugins to interact with staff wrappers, subscribe to event buses, and access internal services via Google Guice.
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+  <img src="https://repo.nookure.com/api/badge/latest/releases/com/nookure/staff/NookureStaff-API?color=8A2BE2&name=NookureStaff" alt="NookureStaff Releases" />
+  <img src="https://repo.nookure.com/api/badge/latest/snapshots/com/nookure/staff/NookureStaff-API?color=8A2BE2&name=NookureStaff" alt="NookureStaff Snapshots" />
+</div>
 
 ---
 
 ## Adding the Dependency
 
-<Tabs>
-  <TabItem label="Gradle (Kotlin DSL)">
-    ```kotlin title="build.gradle.kts"
-    repositories {
-        maven("https://repo.nookure.com/repository/maven-public/")
-    }
+Choose either the **Releases** (stable) or **Snapshots** (latest development builds) channel from `repo.nookure.com`. The latest available version is fetched automatically in the snippets below (falling back to `2.+` if unavailable).
 
-    dependencies {
-        compileOnly("com.nookure.staff:NookureStaff-API:2.0.0")
-    }
-    ```
+<Tabs>
+  <TabItem label="Releases">
+    <div class="nk-dep-channel" data-channel="releases">
+      **Gradle (Kotlin DSL)**
+      ```kotlin title="build.gradle.kts"
+      repositories {
+          maven {
+              name = "nookureRepo"
+              url = uri("https://repo.nookure.com/releases")
+          }
+      }
+
+      dependencies {
+          compileOnly("com.nookure.staff:NookureStaff-API:2.+")
+      }
+      ```
+
+      **Maven**
+      ```xml title="pom.xml"
+      <repositories>
+          <repository>
+              <id>nookure-releases</id>
+              <url>https://repo.nookure.com/releases</url>
+          </repository>
+      </repositories>
+
+      <dependencies>
+          <dependency>
+              <groupId>com.nookure.staff</groupId>
+              <artifactId>NookureStaff-API</artifactId>
+              <version>2.+</version>
+              <scope>provided</scope>
+          </dependency>
+      </dependencies>
+      ```
+    </div>
   </TabItem>
 
-  <TabItem label="Maven">
-    ```xml title="pom.xml"
-    <repositories>
-        <repository>
-            <id>nookure-repo</id>
-            <url>https://repo.nookure.com/repository/maven-public/</url>
-        </repository>
-    </repositories>
+  <TabItem label="Snapshots">
+    <div class="nk-dep-channel" data-channel="snapshots">
+      **Gradle (Kotlin DSL)**
+      ```kotlin title="build.gradle.kts"
+      repositories {
+          maven {
+              name = "nookureRepo"
+              url = uri("https://repo.nookure.com/snapshots")
+          }
+      }
 
-    <dependencies>
-        <dependency>
-            <groupId>com.nookure.staff</groupId>
-            <artifactId>NookureStaff-API</artifactId>
-            <version>2.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
-    ```
+      dependencies {
+          compileOnly("com.nookure.staff:NookureStaff-API:2.+")
+      }
+      ```
+
+      **Maven**
+      ```xml title="pom.xml"
+      <repositories>
+          <repository>
+              <id>nookure-snapshots</id>
+              <url>https://repo.nookure.com/snapshots</url>
+          </repository>
+      </repositories>
+
+      <dependencies>
+          <dependency>
+              <groupId>com.nookure.staff</groupId>
+              <artifactId>NookureStaff-API</artifactId>
+              <version>2.+</version>
+              <scope>provided</scope>
+          </dependency>
+      </dependencies>
+      ```
+    </div>
   </TabItem>
 </Tabs>
+
+<NookureStaffVersionFetcher />
+
+---
+
+## Accessing the Guice Injector (`ServicesManager`)
+
+NookureStaff registers its main `NookureStaff` API implementation in Bukkit's `ServicesManager`. You can retrieve it to access the Google Guice `Injector` and resolve any internal service (`PunishmentService`, `AltAccountService`, `S3PresignerService`, `ActionService`, etc.):
+
+```java
+import com.google.inject.Injector;
+import com.nookure.staff.api.NookureStaff;
+import com.nookure.staff.api.punishment.service.PunishmentService;
+import org.bukkit.Bukkit;
+
+NookureStaff staffApi = Bukkit.getServicesManager().load(NookureStaff.class);
+if (staffApi != null) {
+    Injector injector = staffApi.getInjector();
+    PunishmentService punishmentService = injector.getInstance(PunishmentService.class);
+}
+```
 
 ---
 
@@ -54,6 +125,6 @@ NookureStaff provides a clean API module (`NookureStaff-API`) designed to allow 
    - `StaffPlayerWrapper`: Extends `PlayerWrapper` for players with `nookure.staff`. Holds staff mode status, vanish state, and assigned glow colors.
 2. **Dependency Injection & Services**:
    - Internal components and services (such as `PunishmentService`, `AltAccountService`, `S3PresignerService`, and `ActionService`) are managed using Google Guice.
-   - Plugins can utilize `@Inject` to resolve service singletons.
+   - Plugins can resolve any service singleton via `staffApi.getInjector().getInstance(...)`.
 3. **Decoupled Event Bus**:
    - In addition to standard Bukkit listeners, NookureStaff features an internal high-performance event bus (`EventManager`) for cross-platform and network-level packet events.

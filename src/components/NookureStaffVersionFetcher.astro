@@ -1,0 +1,44 @@
+<script>
+	const updateChannelVersions = async () => {
+		const containers = document.querySelectorAll('.nk-dep-channel[data-channel]');
+		if (!containers.length) return;
+
+		await Promise.all(
+			Array.from(containers).map(async (container) => {
+				const channel = container.getAttribute('data-channel');
+				if (!channel) return;
+
+				try {
+					const res = await fetch(
+						`https://repo.nookure.com/api/maven/latest/version/${channel}/com/nookure/staff/NookureStaff-API`
+					);
+					if (!res.ok) return;
+					const data = await res.json();
+					const version = data?.version;
+					if (!version) return;
+
+					container.querySelectorAll('pre code').forEach((codeEl) => {
+						const walker = document.createTreeWalker(codeEl, NodeFilter.SHOW_TEXT);
+						let node;
+						while ((node = walker.nextNode())) {
+							if (node.nodeValue && node.nodeValue.includes('2.+')) {
+								node.nodeValue = node.nodeValue.replaceAll('2.+', version);
+							}
+						}
+					});
+
+					container.querySelectorAll('button[data-code]').forEach((btn) => {
+						const raw = btn.getAttribute('data-code');
+						if (raw && raw.includes('2.+')) {
+							btn.setAttribute('data-code', raw.replaceAll('2.+', version));
+						}
+					});
+				} catch {
+					// Keep 2.+ fallback on network/CORS/404 errors
+				}
+			})
+		);
+	};
+
+	document.addEventListener('astro:page-load', updateChannelVersions);
+</script>
