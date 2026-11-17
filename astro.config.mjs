@@ -15,6 +15,7 @@ export default defineConfig({
 				}),
 			],
 			title: 'Nookure Docs',
+			favicon: '/favicon.svg',
 			components: {
 				Head: './src/components/starlight/Head.astro',
 				Search: './src/components/starlight/Search.astro',
