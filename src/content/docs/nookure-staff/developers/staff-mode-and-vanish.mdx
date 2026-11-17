@@ -110,9 +110,9 @@ public void enterSilentModeration(Player bukkitPlayer) {
     NookureStaff staffApi = Bukkit.getServicesManager().load(NookureStaff.class);
     if (staffApi == null) return;
 
-    @SuppressWarnings("unchecked")
-    PlayerWrapperManager<Player> wrapperManager =
-            staffApi.getInjector().getInstance(PlayerWrapperManager.class);
+    PlayerWrapperManager<Player> wrapperManager = injector.getInstance(
+        Key.get(new TypeLiteral<PlayerWrapperManager<Player>>() {})
+    );
 
     StaffPlayerWrapper staff = wrapperManager.getStaffPlayerOrNull(bukkitPlayer.getUniqueId());
     if (staff == null) return;

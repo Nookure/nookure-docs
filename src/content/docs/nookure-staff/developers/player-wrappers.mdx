@@ -43,8 +43,10 @@ import org.bukkit.entity.Player;
 NookureStaff staffApi = Bukkit.getServicesManager().load(NookureStaff.class);
 if (staffApi != null) {
     Injector injector = staffApi.getInjector();
-    @SuppressWarnings("unchecked")
-    PlayerWrapperManager<Player> wrapperManager = injector.getInstance(PlayerWrapperManager.class);
+
+    PlayerWrapperManager<Player> wrapperManager = injector.getInstance(
+        Key.get(new TypeLiteral<PlayerWrapperManager<Player>>() {})
+    );
 }
 ```
 
