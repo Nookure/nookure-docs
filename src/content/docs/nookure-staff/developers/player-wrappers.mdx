@@ -124,3 +124,24 @@ Optional<Player> bukkitPlayerOpt = wrapperManager.getPlayer(wrapper);
 | `kick(String / Component reason)` | `void` | Kicks the player with the specified reason. |
 | `getState()` | `WrapperState` | Returns the wrapper's runtime state container. |
 | `hasState(Class<? extends PlayerState>)` | `boolean` | Checks whether a specific runtime state is active. |
+
+---
+
+## Methods Inherited from `CommandSender`
+
+`PlayerWrapper` (and therefore `StaffPlayerWrapper`) extends `com.nookure.staff.api.command.CommandSender`, exposing messaging, identity, and permission helpers:
+
+| Method | Return Type | Description |
+|---|---|---|
+| `sendMessage(Component component)` | `void` | Sends an Adventure `Component` message to the player. |
+| `sendMiniMessage(String message, String... placeholders)` | `void` | Parses a MiniMessage string with `{key}`/`value` placeholder pairs (with PlaceholderAPI enabled) and sends it. |
+| `sendMiniMessage(String message, boolean papi, String... placeholders)` | `void` | Parses a MiniMessage string with `{key}`/`value` placeholder pairs, optionally toggling PlaceholderAPI parsing. |
+| `sendActionbar(Component component)` | `void` | Sends an Adventure `Component` to the player's action bar. |
+| `sendPlainMessage(String message)` | `void` | Sends a plain-text message wrapped in `Component.text(message)`. |
+| `getPing()` | `int` | Returns the player's current ping in milliseconds. |
+| `getDisplayName()` | `Component` | Returns the player's display name as an Adventure `Component`. |
+| `getName()` | `String` | Returns the player's username. |
+| `getUniqueId()` | `UUID` | Returns the player's `UUID`. |
+| `hasPermission(String permission)` | `boolean` | Checks whether the player has the specified permission node. |
+| `isPlayer()` | `boolean` | Returns `true` if the sender is a player. |
+| `isConsole()` | `boolean` | Returns `true` if the sender is the console (`!isPlayer()`). |
