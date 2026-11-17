@@ -22,7 +22,7 @@ NookureStaff provides a dedicated event bus managed by `EventManager` (`com.nook
 
 ---
 
-## Action & Player Events
+## Action, Player & Akko Events
 
 | Event Class | Package | Description |
 |---|---|---|
@@ -30,16 +30,33 @@ NookureStaff provides a dedicated event bus managed by `EventManager` (`com.nook
 | `PlayerJoinEvent` | `com.nookure.staff.api.event.player` | Fired when a player wrapper is initialized upon connection. |
 | `PlayerLeaveEvent` | `com.nookure.staff.api.event.player` | Fired when a player wrapper is destroyed on disconnection. |
 | `PlayerModelLoadedEvent` | `com.nookure.staff.api.event.player` | Fired once the player's persistent database model finishes loading. |
+| `ClientSuccessfullyAuthenticated` | `com.nookure.staff.api.akko.event` | Fired when an Akko WebSocket client session successfully authenticates. |
+
+---
+
+## Addon Lifecycle Events
+
+| Event Class | Package | Description |
+|---|---|---|
+| `AddonEnableEvent` | `com.nookure.staff.api.event.addon` | Fired when an internal addon is enabled. |
+| `AddonDisableEvent` | `com.nookure.staff.api.event.addon` | Fired when an internal addon is disabled. |
+| `AddonReloadEvent` | `com.nookure.staff.api.event.addon` | Fired when an internal addon is reloaded. |
 
 ---
 
 ## Cross-Server Messenger Events
 
-When using Redis or Velocity Plugin Messaging, these network packet events are dispatched across all instances:
+When using Redis, Velocity Plugin Messaging, or MySQL polling, these network packet events (`Serializable`) are dispatched across instances:
 
-- `MStaffModeEnabledEvent` & `MStaffModeDisabledEvent`: Broadcasts staff mode transitions across servers.
-- `MPunishmentCreatedEvent`: Informs all network instances to drop or update local caches upon new bans/mutes.
-- `MPunishmentPardonedEvent`: Informs all network instances of a pardon.
+| Event Class | Package | Description |
+|---|---|---|
+| `MStaffModeEnabledEvent` | `com.nookure.staff.api.event.messenger.staff` | Broadcasts staff mode activation across servers. |
+| `MStaffModeDisabledEvent` | `com.nookure.staff.api.event.messenger.staff` | Broadcasts staff mode deactivation across servers. |
+| `MPunishmentCreatedEvent` | `com.nookure.staff.api.event.messenger.punishment` | Informs all network instances to update caches upon new sanctions. |
+| `MPunishmentPardonedEvent` | `com.nookure.staff.api.event.messenger.punishment` | Informs all network instances of a sanction pardon. |
+| `BroadcastMessage` | `com.nookure.staff.api.event.messenger.server` | Broadcasts a message to all servers on the network. |
+| `BroadcastMessageExcept` | `com.nookure.staff.api.event.messenger.server` | Broadcasts a message to all servers except specified target(s). |
+| `ExecuteCommandAsProxy` | `com.nookure.staff.api.event.messenger.server` | Dispatches a command to be executed on the Velocity proxy. |
 
 ---
 
