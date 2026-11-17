@@ -1,0 +1,128 @@
+---
+title: Staff Mode & Vanish API
+description: How to check, enable, disable, and toggle Staff Mode and Vanish programmatically via StaffPlayerWrapper.
+---
+
+import JavadocModalButton from '../../../../components/JavadocModalButton.astro';
+
+All Staff Mode and Vanish operations are exposed directly on **`StaffPlayerWrapper`** (`com.nookure.staff.api.StaffPlayerWrapper`). See [Player & Staff Wrappers](/nookure-staff/developers/player-wrappers/) for how to obtain a `StaffPlayerWrapper`.
+
+<JavadocModalButton
+  classes={[
+    {
+      name: 'StaffPlayerWrapper',
+      fqcn: 'com.nookure.staff.api.StaffPlayerWrapper',
+      description: 'Staff Mode and Vanish methods (toggleStaffMode, enableVanish, disableVanish, etc.).',
+    },
+    {
+      name: 'PlayerWrapperManager',
+      fqcn: 'com.nookure.staff.api.manager.PlayerWrapperManager',
+      description: 'Service used to retrieve StaffPlayerWrapper instances.',
+    },
+  ]}
+/>
+
+---
+
+## Staff Mode
+
+### Checking Staff Mode Status
+
+```java
+boolean inStaffMode = staff.isInStaffMode();
+
+// Or check if either Staff Mode OR Vanish is active
+boolean hiddenOrStaff = staff.isStaffModeOrVanish();
+```
+
+### Toggling Staff Mode
+
+```java
+// Toggle Staff Mode (standard behavior)
+staff.toggleStaffMode();
+
+// Toggle Staff Mode silently (silentJoin = true)
+staff.toggleStaffMode(true);
+```
+
+### Enabling or Disabling Explicitly
+
+Because `StaffPlayerWrapper` exposes `toggleStaffMode(...)`, check `isInStaffMode()` first when you want to enforce a specific state:
+
+```java
+// Enable Staff Mode if not already active
+if (!staff.isInStaffMode()) {
+    staff.toggleStaffMode(false);
+}
+
+// Disable Staff Mode if currently active
+if (staff.isInStaffMode()) {
+    staff.toggleStaffMode(false);
+}
+```
+
+---
+
+## Vanish
+
+### Checking Vanish Status
+
+```java
+boolean vanished = staff.isInVanish();
+```
+
+### Toggling Vanish
+
+```java
+staff.toggleVanish();
+```
+
+### Enabling or Disabling Vanish Explicitly
+
+`StaffPlayerWrapper` provides dedicated methods to enable or disable vanish directly, with an optional `silent` parameter to suppress chat/broadcast messages:
+
+```java
+// Enable vanish (sends configured messages)
+staff.enableVanish();
+
+// Enable vanish silently (no messages sent)
+staff.enableVanish(true);
+
+// Disable vanish (sends configured messages)
+staff.disableVanish();
+
+// Disable vanish silently (no messages sent)
+staff.disableVanish(true);
+```
+
+---
+
+## Full Example
+
+```java
+import com.nookure.staff.api.NookureStaff;
+import com.nookure.staff.api.StaffPlayerWrapper;
+import com.nookure.staff.api.manager.PlayerWrapperManager;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+public void enterSilentModeration(Player bukkitPlayer) {
+    NookureStaff staffApi = Bukkit.getServicesManager().load(NookureStaff.class);
+    if (staffApi == null) return;
+
+    @SuppressWarnings("unchecked")
+    PlayerWrapperManager<Player> wrapperManager =
+            staffApi.getInjector().getInstance(PlayerWrapperManager.class);
+
+    StaffPlayerWrapper staff = wrapperManager.getStaffPlayerOrNull(bukkitPlayer.getUniqueId());
+    if (staff == null) return;
+
+    if (!staff.isInStaffMode()) {
+        staff.toggleStaffMode(true);
+    }
+
+    if (!staff.isInVanish()) {
+        staff.enableVanish(true);
+    }
+}
+```

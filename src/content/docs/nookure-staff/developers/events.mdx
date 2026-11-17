@@ -79,7 +79,7 @@ public class MyStaffListener {
         boolean isNowInStaffMode = event.staffMode();
         var staffPlayer = event.player();
 
-        System.out.println(staffPlayer.getName() + " staff mode is now: " + isNowInStaffMode);
+        logger.info(staffPlayer.getName() + " staff mode is now: " + isNowInStaffMode);
     }
 }
 ```

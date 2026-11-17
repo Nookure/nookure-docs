@@ -1,0 +1,124 @@
+---
+title: Player & Staff Wrappers
+description: How to obtain PlayerWrapper and StaffPlayerWrapper instances using PlayerWrapperManager in NookureStaff.
+---
+
+import JavadocModalButton from '../../../../components/JavadocModalButton.astro';
+
+NookureStaff wraps every online player in a **`PlayerWrapper`** (`com.nookure.staff.api.PlayerWrapper`). Players who hold the base `nookure.staff` permission are wrapped in **`StaffPlayerWrapper`** (`com.nookure.staff.api.StaffPlayerWrapper`), which extends `PlayerWrapper` with staff-specific controls.
+
+<JavadocModalButton
+  classes={[
+    {
+      name: 'PlayerWrapper',
+      fqcn: 'com.nookure.staff.api.PlayerWrapper',
+      description: 'Base wrapper for any online player.',
+    },
+    {
+      name: 'StaffPlayerWrapper',
+      fqcn: 'com.nookure.staff.api.StaffPlayerWrapper',
+      description: 'Extended wrapper for staff members with Staff Mode and Vanish controls.',
+    },
+    {
+      name: 'PlayerWrapperManager',
+      fqcn: 'com.nookure.staff.api.manager.PlayerWrapperManager',
+      description: 'Service used to look up PlayerWrapper and StaffPlayerWrapper instances.',
+    },
+  ]}
+/>
+
+---
+
+## Obtaining `PlayerWrapperManager`
+
+Retrieve `PlayerWrapperManager` from the NookureStaff Guice `Injector` via Bukkit's `ServicesManager`:
+
+```java
+import com.google.inject.Injector;
+import com.nookure.staff.api.NookureStaff;
+import com.nookure.staff.api.manager.PlayerWrapperManager;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+NookureStaff staffApi = Bukkit.getServicesManager().load(NookureStaff.class);
+if (staffApi != null) {
+    Injector injector = staffApi.getInjector();
+    @SuppressWarnings("unchecked")
+    PlayerWrapperManager<Player> wrapperManager = injector.getInstance(PlayerWrapperManager.class);
+}
+```
+
+---
+
+## Getting a `PlayerWrapper`
+
+You can look up a `PlayerWrapper` by Bukkit `Player` or by `UUID`:
+
+```java
+import com.nookure.staff.api.PlayerWrapper;
+import java.util.Optional;
+import java.util.UUID;
+
+// By Bukkit Player
+Optional<PlayerWrapper> byPlayer = wrapperManager.getPlayerWrapper(bukkitPlayer);
+
+// By UUID (Optional or nullable)
+Optional<PlayerWrapper> byUuid = wrapperManager.getPlayerWrapper(uuid);
+PlayerWrapper nullableWrapper = wrapperManager.getPlayerWrapperOrNull(uuid);
+```
+
+---
+
+## Getting a `StaffPlayerWrapper`
+
+Use `getStaffPlayer(UUID)` or `getStaffPlayerOrNull(UUID)` to obtain a `StaffPlayerWrapper` directly. These return empty / `null` if the player is offline or does not have `nookure.staff`:
+
+```java
+import com.nookure.staff.api.StaffPlayerWrapper;
+import java.util.Optional;
+
+// Using Optional
+Optional<StaffPlayerWrapper> staffOpt = wrapperManager.getStaffPlayer(bukkitPlayer.getUniqueId());
+staffOpt.ifPresent(staff -> {
+    // Player is a staff member
+});
+
+// Or nullable
+StaffPlayerWrapper staff = wrapperManager.getStaffPlayerOrNull(bukkitPlayer.getUniqueId());
+if (staff != null) {
+    // Player is a staff member
+}
+```
+
+Alternatively, if you already have a `PlayerWrapper`, you can check with `instanceof`:
+
+```java
+wrapperManager.getPlayerWrapper(bukkitPlayer).ifPresent(wrapper -> {
+    if (wrapper instanceof StaffPlayerWrapper staff) {
+        // Player is a staff member
+    }
+});
+```
+
+---
+
+## Converting Back to a Bukkit `Player`
+
+To retrieve the underlying platform `Player` from any `PlayerWrapper`:
+
+```java
+Optional<Player> bukkitPlayerOpt = wrapperManager.getPlayer(wrapper);
+```
+
+---
+
+## Common `PlayerWrapper` Methods
+
+| Method | Return Type | Description |
+|---|---|---|
+| `getPlayerModel()` | `PlayerModel` | Returns the database `PlayerModel` (UUID, name, last IP). |
+| `getAddress()` | `InetAddress` | Returns the player's IP address (nullable). |
+| `teleport(PlayerWrapper to)` | `void` | Teleports this player to another wrapped player. |
+| `kick(String / Component reason)` | `void` | Kicks the player with the specified reason. |
+| `getState()` | `WrapperState` | Returns the wrapper's runtime state container. |
+| `hasState(Class<? extends PlayerState>)` | `boolean` | Checks whether a specific runtime state is active. |

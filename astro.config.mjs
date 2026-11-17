@@ -88,6 +88,9 @@ export default defineConfig({
 							label: 'Developers',
 							items: [
 								{ label: 'API Overview', slug: 'nookure-staff/developers/api-overview' },
+								{ label: 'Player & Staff Wrappers', slug: 'nookure-staff/developers/player-wrappers' },
+								{ label: 'Staff Mode & Vanish API', slug: 'nookure-staff/developers/staff-mode-and-vanish' },
+								{ label: 'Punishments API', slug: 'nookure-staff/developers/punishments-api' },
 								{ label: 'Events Reference', slug: 'nookure-staff/developers/events' },
 							],
 						},

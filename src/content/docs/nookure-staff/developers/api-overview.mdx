@@ -3,7 +3,7 @@ title: Developer API Overview
 description: Getting started with NookureStaff API, repository setup (Releases & Snapshots), and accessing the Guice Injector.
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem, LinkButton } from '@astrojs/starlight/components';
 import NookureStaffVersionFetcher from '../../../../components/NookureStaffVersionFetcher.astro';
 
 NookureStaff provides a clean API module (`NookureStaff-API`) designed to allow external plugins to interact with staff wrappers, subscribe to event buses, and access internal services via Google Guice.
@@ -13,11 +13,20 @@ NookureStaff provides a clean API module (`NookureStaff-API`) designed to allow 
   <img src="https://repo.nookure.com/api/badge/latest/snapshots/com/nookure/staff/NookureStaff-API?color=8A2BE2&name=NookureStaff" alt="NookureStaff Snapshots" />
 </div>
 
+<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem;">
+  <LinkButton href="https://repo.nookure.com/javadoc/releases/com/nookure/staff/NookureStaff-API/latest" target="_blank" rel="noopener noreferrer" variant="primary" icon="open-book">
+    Javadocs (Releases)
+  </LinkButton>
+  <LinkButton href="https://repo.nookure.com/javadoc/snapshots/com/nookure/staff/NookureStaff-API/latest" target="_blank" rel="noopener noreferrer" variant="secondary" icon="open-book">
+    Javadocs (Snapshots)
+  </LinkButton>
+</div>
+
 ---
 
 ## Adding the Dependency
 
-Choose either the **Releases** (stable) or **Snapshots** (latest development builds) channel from `repo.nookure.com`. The latest available version is fetched automatically in the snippets below (falling back to `2.+` if unavailable).
+Choose either the **Releases** (stable) or **Snapshots** (latest development builds) channel from `repo.nookure.com`.
 
 <Tabs>
   <TabItem label="Releases">

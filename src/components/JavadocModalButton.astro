@@ -1,0 +1,438 @@
+---
+export interface JavadocClassItem {
+	name: string;
+	fqcn: string;
+	description?: string;
+}
+
+interface Props {
+	classes: JavadocClassItem[];
+	buttonLabel?: string;
+	id?: string;
+}
+
+const {
+	classes,
+	buttonLabel = 'Open Javadocs',
+	id = `nk-javadoc-dialog-${Math.random().toString(36).slice(2, 9)}`,
+} = Astro.props;
+
+const releasesBase = 'https://repo.nookure.com/javadoc/releases/com/nookure/staff/NookureStaff-API/latest';
+const snapshotsBase = 'https://repo.nookure.com/javadoc/snapshots/com/nookure/staff/NookureStaff-API/latest';
+const titleId = `${id}-title`;
+
+const toClassPath = (fqcn: string) => `${fqcn.replaceAll('.', '/')}.html`;
+---
+
+<div class="nk-javadoc-launcher not-content">
+	<button
+		type="button"
+		class="nk-javadoc-trigger"
+		data-javadoc-open={id}
+	>
+		<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+			<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+		</svg>
+		<span>{buttonLabel}</span>
+	</button>
+
+	<dialog
+		id={id}
+		class="nk-javadoc-dialog"
+		closedby="any"
+		aria-labelledby={titleId}
+		data-releases-base={releasesBase}
+		data-snapshots-base={snapshotsBase}
+	>
+		<div class="nk-javadoc-dialog__header">
+			<h2 id={titleId} class="nk-javadoc-dialog__title">Open in Javadocs</h2>
+			<form method="dialog">
+				<button type="submit" class="nk-javadoc-dialog__close" aria-label="Close dialog" autofocus>
+					<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M18 6 6 18"></path>
+						<path d="m6 6 12 12"></path>
+					</svg>
+				</button>
+			</form>
+		</div>
+
+		<p class="nk-javadoc-dialog__subtitle">
+			Choose a class from this page to view its Javadoc, or open the Javadocs index directly.
+		</p>
+
+		<div class="nk-javadoc-channels" role="group" aria-label="Repository channel">
+			<button type="button" class="nk-javadoc-channel is-active" data-channel="releases" aria-pressed="true">
+				Releases
+			</button>
+			<button type="button" class="nk-javadoc-channel" data-channel="snapshots" aria-pressed="false">
+				Snapshots
+			</button>
+		</div>
+
+		<ul class="nk-javadoc-class-list">
+			{classes.map((item) => {
+				const relPath = toClassPath(item.fqcn);
+				return (
+					<li>
+						<a
+							class="nk-javadoc-class-link"
+							href={`${releasesBase}/.cache/unpack/${relPath}`}
+							data-class-path={relPath}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							<div class="nk-javadoc-class-link__info">
+								<span class="nk-javadoc-class-link__name">{item.name}</span>
+								<code class="nk-javadoc-class-link__fqcn">{item.fqcn}</code>
+								{item.description && (
+									<span class="nk-javadoc-class-link__desc">{item.description}</span>
+								)}
+							</div>
+							<svg class="nk-javadoc-class-link__arrow" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M7 7h10v10"></path>
+								<path d="M7 17 17 7"></path>
+							</svg>
+						</a>
+					</li>
+				);
+			})}
+		</ul>
+
+		<div class="nk-javadoc-dialog__footer">
+			<a
+				class="nk-javadoc-index-link"
+				href={releasesBase}
+				data-index-link
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				Open Javadocs Index Only
+				<svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M7 7h10v10"></path>
+					<path d="M7 17 17 7"></path>
+				</svg>
+			</a>
+			<form method="dialog">
+				<button type="submit" class="nk-javadoc-cancel-btn">Close</button>
+			</form>
+		</div>
+	</dialog>
+</div>
+
+<script>
+	const initJavadocDialogs = () => {
+		const outside = (e: PointerEvent, dialog: HTMLDialogElement) => {
+			const r = dialog.getBoundingClientRect();
+			return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+		};
+
+		document.querySelectorAll<HTMLButtonElement>('button[data-javadoc-open]').forEach((btn) => {
+			if (btn.dataset.bound === 'true') return;
+			btn.dataset.bound = 'true';
+
+			btn.addEventListener('click', () => {
+				const dialogId = btn.getAttribute('data-javadoc-open');
+				if (!dialogId) return;
+				const dialog = document.getElementById(dialogId);
+				if (dialog instanceof HTMLDialogElement && !dialog.open) {
+					dialog.showModal();
+				}
+			});
+		});
+
+		document.querySelectorAll<HTMLDialogElement>('dialog.nk-javadoc-dialog').forEach((dialog) => {
+			if (dialog.dataset.bound === 'true') return;
+			dialog.dataset.bound = 'true';
+
+			const releasesBase = dialog.dataset.releasesBase ?? '';
+			const snapshotsBase = dialog.dataset.snapshotsBase ?? '';
+
+			// Fallback for browsers without native closedby="any" support
+			if (!('closedBy' in HTMLDialogElement.prototype)) {
+				let pressedOutside = false;
+				dialog.addEventListener('pointerdown', (e) => {
+					pressedOutside = outside(e, dialog);
+				});
+				dialog.addEventListener('pointerup', (e) => {
+					if (pressedOutside && outside(e, dialog)) {
+						dialog.close();
+					}
+				});
+			}
+
+			dialog.addEventListener('close', () => {
+				dialog.returnValue = '';
+			});
+
+			const channelButtons = dialog.querySelectorAll<HTMLButtonElement>('.nk-javadoc-channel[data-channel]');
+			channelButtons.forEach((channelBtn) => {
+				channelBtn.addEventListener('click', () => {
+					const channel = channelBtn.getAttribute('data-channel');
+					const base = channel === 'snapshots' ? snapshotsBase : releasesBase;
+
+					channelButtons.forEach((b) => {
+						const active = b === channelBtn;
+						b.classList.toggle('is-active', active);
+						b.setAttribute('aria-pressed', active ? 'true' : 'false');
+					});
+
+					dialog.querySelectorAll<HTMLAnchorElement>('a[data-class-path]').forEach((link) => {
+						const path = link.getAttribute('data-class-path');
+						if (path) link.href = `${base}/.cache/unpack/${path}`;
+					});
+
+					const indexLink = dialog.querySelector<HTMLAnchorElement>('a[data-index-link]');
+					if (indexLink) {
+						indexLink.href = base;
+					}
+				});
+			});
+
+			dialog.querySelectorAll<HTMLAnchorElement>('a[target="_blank"]').forEach((link) => {
+				link.addEventListener('click', () => {
+					dialog.close();
+				});
+			});
+		});
+	};
+
+	initJavadocDialogs();
+	document.addEventListener('astro:page-load', initJavadocDialogs);
+</script>
+
+<style>
+	.nk-javadoc-launcher {
+		margin-top: 1rem;
+	}
+
+	.nk-javadoc-trigger {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.65rem 1.15rem;
+		border-radius: 999rem;
+		border: 1px solid var(--sl-color-text-accent);
+		background-color: var(--sl-color-text-accent);
+		color: var(--sl-color-black);
+		font-weight: 600;
+		font-size: var(--sl-text-sm);
+		line-height: 1.25;
+		cursor: pointer;
+		transition: opacity 0.15s ease, transform 0.1s ease;
+	}
+
+	.nk-javadoc-trigger:hover {
+		opacity: 0.9;
+	}
+
+	.nk-javadoc-trigger:active {
+		transform: translateY(1px);
+	}
+
+	dialog.nk-javadoc-dialog {
+		margin: auto;
+		padding: 1.5rem;
+		width: min(34rem, calc(100vw - 2rem));
+		max-height: calc(100dvh - 2rem);
+		overflow-y: auto;
+		border-radius: 0.75rem;
+		border: 1px solid var(--sl-color-hairline);
+		background-color: var(--sl-color-bg-nav);
+		color: var(--sl-color-text);
+		box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+	}
+
+	dialog.nk-javadoc-dialog:modal {
+		overscroll-behavior: contain;
+	}
+
+	dialog.nk-javadoc-dialog::backdrop {
+		background-color: rgba(0, 0, 0, 0.6);
+		backdrop-filter: blur(3px);
+		overflow: hidden;
+		overscroll-behavior: contain;
+	}
+
+	.nk-javadoc-dialog__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.nk-javadoc-dialog__title {
+		margin: 0;
+		font-size: var(--sl-text-xl);
+		font-weight: 700;
+		color: var(--sl-color-white);
+	}
+
+	.nk-javadoc-dialog__close {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		padding: 0;
+		margin: 0;
+		border-radius: 0.5rem;
+		border: 1px solid var(--sl-color-hairline);
+		background: transparent;
+		color: var(--sl-color-gray-2);
+		cursor: pointer;
+	}
+
+	.nk-javadoc-dialog__close:hover {
+		background-color: var(--sl-color-gray-6);
+		color: var(--sl-color-white);
+	}
+
+	.nk-javadoc-dialog__subtitle {
+		margin: 0.5rem 0 1rem;
+		font-size: var(--sl-text-sm);
+		line-height: 1.5;
+		color: var(--sl-color-gray-2);
+	}
+
+	.nk-javadoc-channels {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		padding: 0.25rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--sl-color-hairline);
+		background-color: var(--sl-color-bg);
+		margin: 0 0 1rem;
+		gap: 0.25rem;
+	}
+
+	.nk-javadoc-channel {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+		padding: 0.45rem 0.9rem;
+		border: none;
+		border-radius: 0.375rem;
+		background: transparent;
+		color: var(--sl-color-gray-2);
+		font-size: var(--sl-text-sm);
+		font-weight: 600;
+		line-height: 1.2;
+		cursor: pointer;
+		transition: background-color 0.15s ease, color 0.15s ease;
+	}
+
+	.nk-javadoc-channel:hover:not(.is-active) {
+		color: var(--sl-color-white);
+		background-color: var(--sl-color-gray-6);
+	}
+
+	.nk-javadoc-channel.is-active {
+		background-color: var(--sl-color-text-accent);
+		color: var(--sl-color-black);
+	}
+
+	.nk-javadoc-class-list {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.nk-javadoc-class-link {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.75rem 0.9rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--sl-color-hairline);
+		background-color: var(--sl-color-bg);
+		text-decoration: none;
+		color: inherit;
+		transition: border-color 0.15s ease, background-color 0.15s ease;
+	}
+
+	.nk-javadoc-class-link:hover {
+		border-color: var(--sl-color-text-accent);
+		background-color: var(--sl-color-gray-6);
+	}
+
+	.nk-javadoc-class-link__info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		min-width: 0;
+	}
+
+	.nk-javadoc-class-link__name {
+		font-weight: 600;
+		font-size: var(--sl-text-base);
+		color: var(--sl-color-white);
+	}
+
+	.nk-javadoc-class-link__fqcn {
+		font-size: var(--sl-text-xs);
+		color: var(--sl-color-text-accent);
+		background: transparent;
+		padding: 0;
+		word-break: break-all;
+	}
+
+	.nk-javadoc-class-link__desc {
+		font-size: var(--sl-text-xs);
+		color: var(--sl-color-gray-3);
+		margin-top: 0.15rem;
+	}
+
+	.nk-javadoc-class-link__arrow {
+		flex-shrink: 0;
+		color: var(--sl-color-gray-3);
+	}
+
+	.nk-javadoc-dialog__footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--sl-color-hairline);
+	}
+
+	.nk-javadoc-index-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.5rem 0.9rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--sl-color-text-accent);
+		color: var(--sl-color-text-accent);
+		font-size: var(--sl-text-sm);
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.nk-javadoc-index-link:hover {
+		background-color: var(--sl-color-gray-6);
+	}
+
+	.nk-javadoc-cancel-btn {
+		padding: 0.5rem 0.9rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--sl-color-hairline);
+		background: transparent;
+		color: var(--sl-color-gray-2);
+		font-size: var(--sl-text-sm);
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.nk-javadoc-cancel-btn:hover {
+		background-color: var(--sl-color-gray-6);
+		color: var(--sl-color-white);
+	}
+</style>

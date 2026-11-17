@@ -1,0 +1,197 @@
+---
+title: Punishments API
+description: Programmatically issue sanctions, query active bans/mutes/warnings, pardon punishments, and attach evidence in NookureStaff+.
+sidebar:
+  badge:
+    text: Plus
+    variant: danger
+---
+
+import JavadocModalButton from '../../../../components/JavadocModalButton.astro';
+
+The **Punishments API** is split into two main interfaces inside `com.nookure.staff.api.punishment`:
+
+- **`PunishmentService`** (`com.nookure.staff.api.punishment.service.PunishmentService`): High-level service for issuing, enforcing, and pardoning sanctions, firing events (`PunishmentCreatedEvent`, `PunishmentPardonedEvent`, `PunishmentEvidenceAddedEvent`), and syncing across the network.
+- **`PunishmentRepository`** (`com.nookure.staff.api.punishment.repository.PunishmentRepository`): Low-level data access & cache layer for querying active bans, mutes, warnings, and paginated history.
+
+<JavadocModalButton
+  classes={[
+    {
+      name: 'PunishmentService',
+      fqcn: 'com.nookure.staff.api.punishment.service.PunishmentService',
+      description: 'High-level service for issuing, enforcing, and pardoning sanctions.',
+    },
+    {
+      name: 'PunishmentRepository',
+      fqcn: 'com.nookure.staff.api.punishment.repository.PunishmentRepository',
+      description: 'Low-level repository and cache layer for querying punishments and history.',
+    },
+    {
+      name: 'PunishmentModel',
+      fqcn: 'com.nookure.staff.api.punishment.model.PunishmentModel',
+      description: 'Data model representing a ban, mute, warning, or kick.',
+    },
+    {
+      name: 'PunishmentType',
+      fqcn: 'com.nookure.staff.api.punishment.model.PunishmentType',
+      description: 'Enum of supported punishment types (BAN, TEMP_BAN, MUTE, WARN, etc.).',
+    },
+  ]}
+/>
+
+---
+
+## Obtaining `PunishmentService` and `PunishmentRepository`
+
+Retrieve both from the NookureStaff Guice `Injector` via Bukkit's `ServicesManager`:
+
+```java
+import com.google.inject.Injector;
+import com.nookure.staff.api.NookureStaff;
+import com.nookure.staff.api.punishment.repository.PunishmentRepository;
+import com.nookure.staff.api.punishment.service.PunishmentService;
+import org.bukkit.Bukkit;
+
+NookureStaff staffApi = Bukkit.getServicesManager().load(NookureStaff.class);
+if (staffApi != null) {
+    Injector injector = staffApi.getInjector();
+    PunishmentService punishmentService = injector.getInstance(PunishmentService.class);
+    PunishmentRepository punishmentRepository = punishmentService.getRepository();
+}
+```
+
+---
+
+## Issuing Sanctions (`PunishmentService`)
+
+All sanction methods run asynchronously and return a `CompletableFuture<PunishmentModel>`.
+
+### Banning & Temp-Banning
+Pass `null` as `duration` for a permanent ban, or a `java.time.Duration` for a temporary ban (`TEMP_BAN`):
+
+```java
+import java.time.Duration;
+
+// Temporary 7-day ban (silent = false)
+punishmentService.ban(targetModel, staffModel, "Unfair Advantage", Duration.ofDays(7), false)
+    .thenAccept(punishment -> {
+        logger.info("Issued ban #" + punishment.getId());
+    });
+
+// Permanent console ban (punisher = null, silent = true)
+punishmentService.ban(targetModel, null, "Chargeback", null, true);
+```
+
+### Muting, Warning & Kicking
+
+```java
+// Temporary 1-hour mute
+punishmentService.mute(targetModel, staffModel, "Spamming chat", Duration.ofHours(1), false);
+
+// Categorized warning (triggers configured auto-escalation ladders)
+punishmentService.warn(targetModel, staffModel, "toxicity", "Disrespectful behavior", Duration.ofDays(30), false);
+
+// Immediate kick
+punishmentService.kick(targetModel, staffModel, "AFK in combat", false);
+```
+
+### Custom `PunishmentModel`
+For full control (e.g., `IP_BAN`, `TEMP_IP_BAN`, `IP_MUTE`, custom points, or `serverName`), use `punish(PunishmentModel)`:
+
+```java
+import com.nookure.staff.api.punishment.model.PunishmentModel;
+import com.nookure.staff.api.punishment.model.PunishmentType;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+PunishmentModel model = new PunishmentModel();
+model.setTarget(targetModel);
+model.setTargetIp(targetModel.getLastIp());
+model.setPunisher(staffModel);
+model.setPunisherName(staffModel != null ? staffModel.getName() : "Console");
+model.setType(PunishmentType.TEMP_IP_BAN);
+model.setReason("Ban Evasion");
+model.setExpiresAt(Instant.now().plus(30, ChronoUnit.DAYS));
+model.setSilent(false);
+model.setServerName("global");
+model.setActive(true);
+
+punishmentService.punish(model);
+```
+
+---
+
+## Pardoning Sanctions
+
+Revoke an active sanction by its ID or `PunishmentModel` (fires `PunishmentPardonedEvent` and invalidates caches):
+
+```java
+// Pardon by punishment ID as console
+punishmentService.pardon(42L, "Appeal accepted")
+    .thenAccept(pardoned -> {
+        if (pardoned) {
+            logger.info("Punishment #42 has been pardoned.");
+        }
+    });
+
+// Pardon as a staff member (silent = true)
+punishmentService.pardon(42L, staffModel, "False positive", true);
+```
+
+---
+
+## Attaching Evidence
+
+Attach evidence (`EvidenceType`: `IMAGE_URL`, `S3_OBJECT`, `ACTION_LOGS`, `TEXT_NOTE`) to an existing sanction via `addEvidence(PunishmentEvidenceModel)` (fires `PunishmentEvidenceAddedEvent`):
+
+```java
+import com.nookure.staff.api.punishment.model.EvidenceType;
+import com.nookure.staff.api.punishment.model.PunishmentEvidenceModel;
+
+PunishmentEvidenceModel evidence = new PunishmentEvidenceModel();
+evidence.setPunishment(punishmentModel);
+evidence.setType(EvidenceType.IMAGE_URL);
+evidence.setContent("https://example.com/proof.png");
+evidence.setNote("Clip showing fly hacks");
+evidence.setUploadedBy(staffModel);
+
+punishmentService.addEvidence(evidence);
+```
+
+---
+
+## Querying Sanctions (`PunishmentRepository`)
+
+Use `PunishmentRepository` to check active bans, mutes, warnings, or paginated punishment history:
+
+```java
+import java.util.UUID;
+
+UUID targetUuid = targetModel.getUuid();
+String targetIp = targetModel.getLastIp();
+
+// Check active ban (by UUID and/or IP)
+punishmentRepository.findActiveBan(targetUuid, targetIp).thenAccept(banOpt -> {
+    banOpt.ifPresent(ban -> {
+        logger.info("Player is banned for: " + ban.getReason());
+    });
+});
+```
+
+---
+
+## `PunishmentType` Reference
+
+| Enum Constant | Category | Temporary? |
+|---|---|---|
+| `BAN` | Ban | No |
+| `TEMP_BAN` | Ban | Yes |
+| `IP_BAN` | IP Ban | No |
+| `TEMP_IP_BAN` | IP Ban | Yes |
+| `MUTE` | Mute | No |
+| `TEMP_MUTE` | Mute | Yes |
+| `IP_MUTE` | IP Mute | No |
+| `TEMP_IP_MUTE` | IP Mute | Yes |
+| `WARN` | Warning | No |
+| `TEMP_WARN` | Warning | Yes |
+| `KICK` | Kick | No |
