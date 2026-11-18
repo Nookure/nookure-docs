@@ -38,7 +38,7 @@ NookureStaff is built for cutting-edge Java and Minecraft platforms. Please revi
   <TabItem label="Paper Server (Standalone)">
     <Steps>
       1. Ensure your server is running with **Java 25**.
-      2. Download the latest `NookureStaff-Paper-xxx.jar`.
+      2. Download the latest `NookureStaff-xxx.jar`.
       3. Place the JAR file into your server's `plugins/` directory.
       4. Start or restart the server. NookureStaff will generate its default folder at `plugins/NookureStaff/`.
       5. Configure your settings in `plugins/NookureStaff/config.yml`.
@@ -50,11 +50,11 @@ NookureStaff is built for cutting-edge Java and Minecraft platforms. Please revi
     <Steps>
       1. **Database Setup**: Create a shared MySQL or MariaDB database accessible by both your Velocity proxy and all Paper backend instances.
       2. **Velocity Proxy**:
-         - Place `NookureStaff-Velocity-xxx.jar` into your proxy's `plugins/` directory.
+         - Place `NookureStaff-xxx.jar` into your proxy's `plugins/` directory.
          - Start the proxy to generate `plugins/nookurestaff/velocity.yml`.
          - Configure your MySQL database credentials in `velocity.yml`.
       3. **Paper Backends**:
-         - Place `NookureStaff-Paper-xxx.jar` into each Paper server's `plugins/` folder.
+         - Place `NookureStaff-xxx.jar` into each Paper server's `plugins/` folder.
          - In `plugins/NookureStaff/config.yml`, configure the `database` section to connect to the same shared MySQL database.
          - Set a unique `serverName` for each backend server (e.g., `survival-1`, `lobby`).
       4. **Network Messenger**:
