@@ -4,6 +4,7 @@ description: Feature comparison between the free open-source NookureStaff editio
 ---
 
 import { Badge, LinkButton } from '@astrojs/starlight/components';
+import ComparisonIcon from '../../../components/ComparisonIcon.astro';
 
 **NookureStaff** is available in two editions:
 - **NookureStaff (Free / Open-Source)**: Includes the core staff moderation toolkit (Staff Mode, Hotbar Items, Vanish & Glow, Freeze & Screenshare, Live InvSee/Enderchest, Player List & Notes, Staff Chat, and Multi-Server Synchronization).
@@ -18,23 +19,24 @@ import { Badge, LinkButton } from '@astrojs/starlight/components';
 ## Comparison Table
 
 | Feature / Module | NookureStaff (Free) | NookureStaff+ (Paid) |
-|---|---|---|
-| **Staff Mode & Custom Hotbar Items** | Included | Included |
-| **Vanish, Glow & TAB Integration** | Included | Included |
-| **Freeze & Screenshare (`/freeze`, `/freezechat`)** | Included | Included |
-| **Live InvSee & Ender Chest (`/staff invsee`)** | Included | Included |
-| **Player List, Actions GUI & Notes (`/note`)** | Included | Included |
-| **Staff Chat & HelpOp** | Included | Included |
-| **Multi-Server Sync (Redis, Encrypted PM, MySQL)** | Included | Included |
-| **Web Viewer (Beta) via Akko WebSockets** | Not included | **Included** |
-| **Punishments & Sanctions Suite** | Not included | **Included** |
-| **Alt Account Detection & Approvals (`/dupeip`)** | Not included | **Included** |
-| **Mandatory Evidence Policy & S3 Uploads (`/evidence`)** | Not included | **Included** |
-| **Inventory Rollback Engine (`/rollback`)** | Not included | **Included** |
-| **Actions (Action Logger)** | Not included | **Included** |
-| **High-Performance Cache Layer (Caffeine & Redis)** | Not included | **Included** |
-| **PlaceholderAPI in Staff Chat & Broadcasts** | Not included | **Included** |
-| **GlitchTip Automatic Error Reporting** | Not included | **Included** |
+|---|:---:|:---:|
+| **Staff Mode & Custom Hotbar Items** | <ComparisonIcon included /> | <ComparisonIcon included /> |
+| **Vanish, Glow & TAB Integration** | <ComparisonIcon included /> | <ComparisonIcon included /> |
+| **Freeze & Screenshare (`/freeze`, `/freezechat`)** | <ComparisonIcon included /> | <ComparisonIcon included /> |
+| **Live InvSee & Ender Chest (`/staff invsee`)** | <ComparisonIcon included /> | <ComparisonIcon included /> |
+| **Player List, Actions GUI & Notes (`/note`)** | <ComparisonIcon included /> | <ComparisonIcon included /> |
+| **Staff Chat & HelpOp** | <ComparisonIcon included /> | <ComparisonIcon included /> |
+| **Multi-Server Sync (Redis, Encrypted PM, MySQL)** | <ComparisonIcon included /> | <ComparisonIcon included /> |
+| **Web Viewer (Beta) via Akko WebSockets** | <ComparisonIcon /> | <ComparisonIcon included /> |
+| **Punishments & Sanctions Suite** | <ComparisonIcon /> | <ComparisonIcon included /> |
+| **Alt Account Detection & Approvals (`/dupeip`)** | <ComparisonIcon /> | <ComparisonIcon included /> |
+| **Mandatory Evidence Policy & S3 Uploads (`/evidence`)** | <ComparisonIcon /> | <ComparisonIcon included /> |
+| **Inventory Rollback Engine (`/rollback`)** | <ComparisonIcon /> | <ComparisonIcon included /> |
+| **Actions (Action Logger)** | <ComparisonIcon /> | <ComparisonIcon included /> |
+| **Folia Support** | <ComparisonIcon /> | <ComparisonIcon included /> |
+| **High-Performance Cache Layer (Caffeine & Redis)** | <ComparisonIcon /> | <ComparisonIcon included /> |
+| **Optional Error Monitoring (GlitchTip)** | <ComparisonIcon /> | <ComparisonIcon included /> |
+| **Custom & Personal Support** | <ComparisonIcon /> | <ComparisonIcon included /> |
 
 ---
 

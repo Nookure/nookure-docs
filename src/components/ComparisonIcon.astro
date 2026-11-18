@@ -1,0 +1,42 @@
+---
+interface Props {
+	included?: boolean;
+}
+
+const { included = false } = Astro.props;
+---
+
+<span
+	class:list={['nk-comparison-icon', included ? 'is-included' : 'is-excluded']}
+	role="img"
+	aria-label={included ? 'Included' : 'Not included'}
+	title={included ? 'Included' : 'Not included'}
+>
+	{included ? (
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M20 6 9 17l-5-5" />
+		</svg>
+	) : (
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M18 6 6 18" />
+			<path d="m6 6 12 12" />
+		</svg>
+	)}
+</span>
+
+<style>
+	.nk-comparison-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		vertical-align: middle;
+	}
+
+	.nk-comparison-icon.is-included {
+		color: #22c55e;
+	}
+
+	.nk-comparison-icon.is-excluded {
+		color: #ef4444;
+	}
+</style>
