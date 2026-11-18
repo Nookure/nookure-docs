@@ -110,11 +110,13 @@ Choose either the **Releases** (stable) or **Snapshots** (latest development bui
 
 ## Accessing the Guice Injector (`ServicesManager`)
 
-NookureStaff registers its main `NookureStaff` API implementation in Bukkit's `ServicesManager`. You can retrieve it to access the Google Guice `Injector` and resolve any internal service (`PunishmentService`, `AltAccountService`, `S3PresignerService`, `ActionService`, etc.):
+NookureStaff registers its main `NookureStaff` API implementation in Bukkit's `ServicesManager`. You can retrieve it to access the Google Guice `Injector` and resolve any internal service (`PunishmentService`, `AltAccountService`, `S3PresignerService`, `ActionService`, `ActionRegistry`, etc.):
 
 ```java
 import com.google.inject.Injector;
 import com.nookure.staff.api.NookureStaff;
+import com.nookure.staff.api.action.service.ActionRegistry;
+import com.nookure.staff.api.action.service.ActionService;
 import com.nookure.staff.api.punishment.service.PunishmentService;
 import org.bukkit.Bukkit;
 
@@ -122,6 +124,8 @@ NookureStaff staffApi = Bukkit.getServicesManager().load(NookureStaff.class);
 if (staffApi != null) {
     Injector injector = staffApi.getInjector();
     PunishmentService punishmentService = injector.getInstance(PunishmentService.class);
+    ActionRegistry actionRegistry = injector.getInstance(ActionRegistry.class);
+    ActionService actionService = injector.getInstance(ActionService.class);
 }
 ```
 
@@ -133,7 +137,7 @@ if (staffApi != null) {
    - `PlayerWrapper`: Represents standard player models, caching UUID, name, and database state.
    - `StaffPlayerWrapper`: Extends `PlayerWrapper` for players with `nookure.staff`. Holds staff mode status, vanish state, and assigned glow colors.
 2. **Dependency Injection & Services**:
-   - Internal components and services (such as `PunishmentService`, `AltAccountService`, `S3PresignerService`, and `ActionService`) are managed using Google Guice.
+   - Internal components and services (such as `PunishmentService`, `AltAccountService`, `S3PresignerService`, `ActionService`, and `ActionRegistry`) are managed using Google Guice.
    - Plugins can resolve any service singleton via `staffApi.getInjector().getInstance(...)`.
 3. **Decoupled Event Bus**:
    - In addition to standard Bukkit listeners, NookureStaff features an internal high-performance event bus (`EventManager`) for cross-platform and network-level packet events.

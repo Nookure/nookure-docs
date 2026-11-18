@@ -27,6 +27,7 @@ NookureStaff provides a dedicated event bus managed by `EventManager` (`com.nook
 | Event Class | Package | Description |
 |---|---|---|
 | `ActionRecordedEvent` | `com.nookure.staff.api.event.action` | Fired whenever an action log entry is saved into the database. |
+| `ActionDefinitionRegisteredEvent` | `com.nookure.staff.api.event.action` | Fired when a custom `ActionDefinition` (with Tabler Icon and `ActionColor`) is registered in `ActionRegistry`. |
 | `PlayerJoinEvent` | `com.nookure.staff.api.event.player` | Fired when a player wrapper is initialized upon connection. |
 | `PlayerLeaveEvent` | `com.nookure.staff.api.event.player` | Fired when a player wrapper is destroyed on disconnection. |
 | `PlayerModelLoadedEvent` | `com.nookure.staff.api.event.player` | Fired once the player's persistent database model finishes loading. |

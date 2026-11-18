@@ -1,0 +1,265 @@
+---
+title: Actions & Custom Actions API
+description: Register custom audit action types with Tabler Icons and UI colors, record player/staff actions, and query paginated audit history.
+sidebar:
+  badge:
+    text: Plus
+    variant: danger
+---
+
+import JavadocModalButton from '../../../../components/JavadocModalButton.astro';
+
+The **Actions API** (`com.nookure.staff.api.action`) allows plugins and addons to:
+
+1. **Register custom audit action types** (`ActionDefinition`) via `ActionRegistry`, including a [Tabler Icons](https://tabler.io/icons) identifier and a frontend color (`ActionColor`) that automatically synchronize with the Akko web panel.
+2. **Record player, staff, and system actions** (`ActionModel`) into the database asynchronously via `ActionService`.
+3. **Query paginated action history** with flexible filters and mark specific logs as protected evidence.
+
+<JavadocModalButton
+  classes={[
+    {
+      name: 'ActionRegistry',
+      fqcn: 'com.nookure.staff.api.action.service.ActionRegistry',
+      description: 'Registry for built-in and custom ActionDefinition entries synced to the frontend.',
+    },
+    {
+      name: 'ActionService',
+      fqcn: 'com.nookure.staff.api.action.service.ActionService',
+      description: 'Service responsible for recording and querying player and staff audit actions.',
+    },
+    {
+      name: 'ActionDefinition',
+      fqcn: 'com.nookure.staff.api.action.model.ActionDefinition',
+      description: 'Defines an action ID, display name, category, Tabler Icon, and frontend color.',
+    },
+    {
+      name: 'ActionModel',
+      fqcn: 'com.nookure.staff.api.action.model.ActionModel',
+      description: 'Persistent entity representing a recorded audit action.',
+    },
+    {
+      name: 'ActionColor',
+      fqcn: 'com.nookure.staff.api.action.model.ActionColor',
+      description: 'Represents a UI palette preset color or custom hexadecimal color code.',
+    },
+    {
+      name: 'TablerIcon',
+      fqcn: 'com.nookure.staff.api.action.model.TablerIcon',
+      description: 'Represents and normalizes a Tabler Icons identifier.',
+    },
+  ]}
+/>
+
+---
+
+## Obtaining `ActionRegistry` and `ActionService`
+
+Retrieve both services from the NookureStaff Guice `Injector` via Bukkit's `ServicesManager` (or via `@Inject` inside a NookureStaff addon):
+
+```java
+import com.google.inject.Injector;
+import com.nookure.staff.api.NookureStaff;
+import com.nookure.staff.api.action.service.ActionRegistry;
+import com.nookure.staff.api.action.service.ActionService;
+import org.bukkit.Bukkit;
+
+NookureStaff staffApi = Bukkit.getServicesManager().load(NookureStaff.class);
+if (staffApi != null) {
+    Injector injector = staffApi.getInjector();
+    ActionRegistry actionRegistry = injector.getInstance(ActionRegistry.class);
+    ActionService actionService = injector.getInstance(ActionService.class);
+}
+```
+
+---
+
+## Registering Custom Actions (`ActionRegistry`)
+
+Custom actions allow external plugins (such as Economy, Crates, Clans, or Anticheat integrations) to appear in the audit log and Akko web dashboard with their own display name, category, **Tabler Icon**, and **Color**.
+
+### Building an `ActionDefinition`
+
+Use `ActionDefinition.builder(id)` where `id` is a unique `UPPER_SNAKE_CASE` identifier (2–48 characters):
+
+```java
+import com.nookure.staff.api.action.model.ActionCategory;
+import com.nookure.staff.api.action.model.ActionColor;
+import com.nookure.staff.api.action.model.ActionDefinition;
+import com.nookure.staff.api.action.model.TablerIcon;
+
+// Using a predefined palette color and Tabler icon name
+public static final ActionDefinition ECONOMY_TRANSFER = ActionDefinition.builder("ECONOMY_TRANSFER")
+        .displayName("Economy Transfer")
+        .category(ActionCategory.PLAYER)
+        .icon("coins") // Tabler Icon: https://tabler.io/icons/icon/coins
+        .color(ActionColor.AMBER)
+        .build();
+
+// Using a custom Hex color and PascalCase React icon name (normalized automatically to "gift")
+public static final ActionDefinition CRATE_OPEN = ActionDefinition.builder("CRATE_OPEN")
+        .displayName("Crate Opened")
+        .category(ActionCategory.PLAYER)
+        .icon(TablerIcon.of("IconGift"))
+        .color(ActionColor.hex("#a855f7"))
+        .build();
+```
+
+### Registering with `ActionRegistry`
+
+Register your definitions during plugin startup (`onEnable`):
+
+```java
+// Register a pre-built ActionDefinition
+actionRegistry.register(ECONOMY_TRANSFER);
+actionRegistry.register(CRATE_OPEN);
+
+// Or register inline using the shorthand overload
+ActionDefinition anticheatFlag = actionRegistry.register(
+        "ANTICHEAT_FLAG",
+        "Anticheat Flag",
+        ActionCategory.SYSTEM,
+        "shield-exclamation",
+        "#ef4444"
+);
+```
+
+:::note[Automatic Frontend Synchronization]
+When an `ActionDefinition` is registered:
+- `ActionDefinitionRegisteredEvent` is fired on the NookureStaff `EventManager`.
+- All connected Akko web clients automatically receive an `ACTION_DEFINITIONS_SYNC` (`0x19`) packet containing the registered ID, display name, category, Tabler icon, and color.
+:::
+
+### Icons (`TablerIcon`) & Colors (`ActionColor`)
+
+- **`TablerIcon`**: Accepts any icon from [Tabler Icons](https://tabler.io/icons). Input strings are normalized to lowercase `kebab-case` (e.g., `"shield-lock"`, `"icon-shield-lock"`, `"ti-shield-lock"`, and `"IconShieldLock"` all normalize to `"shield-lock"`). Built-in constants such as `TablerIcon.SHIELD`, `TablerIcon.GAVEL`, `TablerIcon.BAN`, `TablerIcon.MESSAGE`, etc. are also available.
+- **`ActionColor`**: Supports both semantic UI palette presets and arbitrary `#RRGGBB` / `#RGB` hexadecimal codes:
+  - **Presets**: `ZINC`, `SLATE`, `RED`, `ROSE`, `ORANGE`, `AMBER`, `YELLOW`, `LIME`, `GREEN`, `EMERALD`, `TEAL`, `CYAN`, `SKY`, `BLUE`, `INDIGO`, `VIOLET`, `PURPLE`, `FUCHSIA`, `PINK`.
+  - **Hex**: `ActionColor.hex("#ff5500")` or `ActionColor.of("#ff5500")`.
+
+---
+
+## Recording Actions (`ActionService`)
+
+All `ActionService#record` methods execute asynchronously on a dedicated thread pool and return a `CompletableFuture<Void>`. Once persisted, `ActionRecordedEvent` is fired and broadcasted in real time to authorized Akko sessions.
+
+### Recording a Custom `ActionDefinition`
+
+```java
+import com.nookure.staff.api.action.model.ActionLocation;
+import java.util.Map;
+
+ActionLocation location = new ActionLocation(
+        player.getWorld().getName(),
+        player.getLocation().getX(),
+        player.getLocation().getY(),
+        player.getLocation().getZ()
+);
+
+Map<String, Object> metadata = Map.of(
+        "amount", 5000,
+        "currency", "Coins",
+        "reason", "Shop purchase"
+);
+
+// Record action with actor, optional target, definition, location, and metadata map
+actionService.record(actorModel, targetModel, ECONOMY_TRANSFER, location, metadata);
+
+// Simple overload without target, location, or metadata
+actionService.record(actorModel, CRATE_OPEN);
+```
+
+### Recording a Built-In `ActionType`
+
+You can also record any built-in `ActionType` enum constant directly:
+
+```java
+import com.nookure.staff.api.action.model.ActionType;
+
+actionService.record(staffModel, targetModel, ActionType.STAFF_TELEPORT, location, null);
+```
+
+---
+
+## Querying Actions & Marking Evidence
+
+### Querying by `ActionDefinition` or `actionTypeId`
+
+```java
+import com.nookure.staff.api.action.model.ActionModel;
+import io.ebean.PagedList;
+
+// Find paginated actions for a specific ActionDefinition (page 1, 20 items per page)
+PagedList<ActionModel> crateLogs = actionService.findByDefinition(CRATE_OPEN, 1, 20);
+
+for (ActionModel log : crateLogs.getList()) {
+    String typeId = log.getActionTypeId(); // e.g., "CRATE_OPEN"
+    Map<String, Object> meta = log.getMetadata();
+}
+
+// Flexible filtering across actor, target, actionTypeId, category, serverName, and date range
+PagedList<ActionModel> filtered = actionService.findActionsByTypeId(
+        actorModel,
+        null,
+        null,
+        null,
+        "ECONOMY_TRANSFER",
+        ActionCategory.PLAYER,
+        "survival-1",
+        null,
+        null,
+        1,
+        25
+);
+```
+
+### Protecting an Action as Evidence
+
+Actions marked as evidence (`isEvidence = true`) are protected from automatic database purges (`purgeOlderThan`):
+
+```java
+actionService.setEvidence(actionId, true).thenAccept(updated -> {
+    if (updated) {
+        logger.info("Action #" + actionId + " is now locked as protected evidence.");
+    }
+});
+```
+
+---
+
+## Built-In `ActionType` Reference
+
+| `ActionType` ID | Category | Default Icon | Default Color |
+|---|---|---|---|
+| `STAFF_MODE_ENTER` | `STAFF` | `shield` | `blue` |
+| `STAFF_MODE_EXIT` | `STAFF` | `shield-off` | `slate` |
+| `STAFF_VANISH_TOGGLE` | `STAFF` | `eye-off` | `purple` |
+| `STAFF_FREEZE_PLAYER` | `STAFF` | `snowflake` | `cyan` |
+| `STAFF_UNFREEZE_PLAYER` | `STAFF` | `flame` | `teal` |
+| `STAFF_INSPECT_INVENTORY` | `STAFF` | `backpack` | `amber` |
+| `STAFF_TELEPORT` | `STAFF` | `compass` | `indigo` |
+| `STAFF_NOTE_ADD` | `STAFF` | `note` | `emerald` |
+| `STAFF_NOTE_DELETE` | `STAFF` | `trash` | `rose` |
+| `STAFF_PIN_AUTH` | `STAFF` | `lock` | `green` |
+| `STAFF_ROLLBACK_INVENTORY` | `STAFF` | `history` | `amber` |
+| `STAFF_MODIFIED_INVENTORY` | `STAFF` | `edit` | `amber` |
+| `STAFF_BAN` | `STAFF` | `gavel` | `red` |
+| `STAFF_TEMP_BAN` | `STAFF` | `clock-pause` | `rose` |
+| `STAFF_UNBAN` | `STAFF` | `check` | `emerald` |
+| `STAFF_MUTE` | `STAFF` | `microphone-off` | `amber` |
+| `STAFF_TEMP_MUTE` | `STAFF` | `clock-pause` | `yellow` |
+| `STAFF_UNMUTE` | `STAFF` | `microphone` | `teal` |
+| `STAFF_WARN` | `STAFF` | `alert-triangle` | `orange` |
+| `STAFF_UNWARN` | `STAFF` | `shield-check` | `lime` |
+| `STAFF_KICK` | `STAFF` | `logout` | `red` |
+| `STAFF_IP_BAN` | `STAFF` | `ban` | `rose` |
+| `STAFF_IP_MUTE` | `STAFF` | `network` | `amber` |
+| `PUNISHMENT_AUTO_TRIGGER` | `SYSTEM` | `robot` | `fuchsia` |
+| `STAFF_FREEZE_ACTION_AS_EVIDENCE` | `STAFF` | `lock` | `cyan` |
+| `STAFF_ALTS_LOOKUP` | `STAFF` | `users` | `indigo` |
+| `STAFF_ALT_APPROVE` | `STAFF` | `user-check` | `emerald` |
+| `STAFF_ALT_UNAPPROVE` | `STAFF` | `user-x` | `rose` |
+| `PLAYER_LOGIN` | `PLAYER` | `login` | `emerald` |
+| `PLAYER_QUIT` | `PLAYER` | `logout` | `zinc` |
+| `PLAYER_CHAT` | `PLAYER` | `message` | `violet` |
+| `PLAYER_COMMAND` | `PLAYER` | `terminal-2` | `orange` |
+| `PLAYER_TELEPORT` | `PLAYER` | `arrows-right-left` | `sky` |
