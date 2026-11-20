@@ -72,6 +72,12 @@ export default defineConfig({
 							],
 						},
 						{
+							label: 'Self-Hosting',
+							items: [
+								{ label: 'Daiana (WebSocket Relay)', slug: 'nookure-staff/self-hosting/daiana' },
+							],
+						},
+						{
 							label: 'Migrations',
 							items: [
 								{ label: 'Migrating from LiteBans', slug: 'nookure-staff/migrations/litebans' },

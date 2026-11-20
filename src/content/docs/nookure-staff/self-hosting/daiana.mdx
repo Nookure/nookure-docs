@@ -1,0 +1,215 @@
+---
+title: Self-Hosting Daiana (WebSocket Relay)
+description: How to self-host Daiana, the Rust & Actix Web binary WebSocket relay server used by NookureStaff+ and Akko, including Docker, Nginx reverse proxy, and SSL.
+sidebar:
+  badge:
+    text: Plus
+    variant: danger
+---
+
+**Daiana** is a fast, lightweight, concurrent room-based binary WebSocket relay server built with **Rust** and **Actix Web** (licensed under **GNU-AGPL**). Self-hosting Daiana lets you run your own relay infrastructure for NookureStaff+ and the Akko web viewer without depending on Nookure's hosted relay.
+
+---
+
+## Features
+
+- **Room-Based Architecture:** Create dynamic rooms identified by UUIDs with configurable capacity limits.
+- **Ultra-Compact Binary Protocol:** Zero JSON overhead for real-time messaging using efficient byte streams (`bytes::Bytes`).
+- **Flexible Routing Modes:**
+  - **Broadcast:** Send messages to all other clients in the room.
+  - **Unicast:** Send private, direct messages to a specific client UUID.
+  - **Multicast:** Send messages to a selected list of client UUIDs.
+- **Concurrent & Non-Blocking:** Concurrent message delivery powered by `futures_util::future::join_all` and Tokio.
+- **Automatic Lifecycle Synchronization:** Clients automatically receive `ClientConnected` and `ClientDisconnected` events with server-verified sender UUIDs to prevent identity spoofing.
+
+---
+
+## Deployment
+
+### Prerequisites
+
+- **Docker** & **Docker Compose** (recommended for production)
+- Or **[Rust](https://www.rust-lang.org/)** (2024 edition or latest stable) if building from source
+- *(Optional)* **[Node.js](https://nodejs.org/)** / `pnpm` to run the TypeScript test client
+
+### Option 1: Docker Compose (Recommended)
+
+Create a `compose.yml` file:
+
+```yaml title="compose.yml"
+services:
+  daiana:
+    image: ghcr.io/lunna5/daiana:latest
+    container_name: daiana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+      - MAX_CLIENTS_ON_CHANNEL=5
+      - CHANNEL_TIMEOUT=30
+      - MAX_PACKETS_PER_SEC=100
+      - MAX_PACKET_SIZE_BYTES=65536
+      - RUST_LOG=info
+      # Enable CORS when the Akko web viewer is hosted on a different domain
+      # - ENABLE_CORS=true
+      # - CORS_ORIGINS=https://akko.example.com
+```
+
+> **Tip:** Binding to `127.0.0.1:8080:8080` keeps Daiana accessible only to your local reverse proxy (Nginx) instead of exposing plain HTTP/WS directly on your public IP.
+
+Start the container:
+
+```bash
+docker compose up -d
+```
+
+### Option 2: Docker CLI
+
+```bash
+docker run -d -p 8080:8080 --name daiana --restart unless-stopped ghcr.io/lunna5/daiana:latest
+```
+
+### Option 3: Build from Source (Cargo or Local Docker)
+
+```bash
+git clone https://github.com/Lunna5/daiana.git
+cd daiana
+
+# Run directly with Cargo
+cargo run --release
+```
+
+Or build the Docker image locally:
+
+```bash
+docker build -t daiana .
+docker run -d -p 8080:8080 --name daiana daiana
+```
+
+The server initializes on `http://0.0.0.0:8080`.
+
+---
+
+## Environment Variables
+
+You can configure Daiana via environment variables or a `.env` file at the project root:
+
+```dotenv title=".env"
+# Server bind address and port
+HOST=0.0.0.0
+PORT=8080
+
+# Maximum clients allowed per room (default: 5)
+MAX_CLIENTS_ON_CHANNEL=5
+
+# Room inactivity timeout in seconds (default: 30)
+CHANNEL_TIMEOUT=30
+
+# Maximum packets per second per client connection (default: 100, 0 to disable)
+MAX_PACKETS_PER_SEC=100
+
+# Maximum packet payload size in bytes (default: 65536 / 64KiB)
+MAX_PACKET_SIZE_BYTES=65536
+
+# CORS Configuration (Disabled by default if omitted or ENABLE_CORS=false)
+# ENABLE_CORS=true
+# CORS_ORIGINS=*
+# CORS_METHODS=GET,POST,OPTIONS
+# CORS_HEADERS=Authorization,Accept,Content-Type
+# CORS_MAX_AGE=3600
+
+# Log level filter (trace, debug, info, warn, error)
+RUST_LOG=info
+```
+
+---
+
+## Reverse Proxy with Nginx & SSL
+
+In production, place Daiana behind **Nginx** with TLS so both HTTP room creation (`https://`) and WebSocket connections (`wss://`) are encrypted.
+
+1. Issue the SSL certificate first with Certbot:
+
+```bash
+sudo certbot certonly --nginx -d daiana.example.com
+```
+
+2. Create `/etc/nginx/sites-available/daiana.example.com.conf`:
+
+```nginx title="/etc/nginx/sites-available/daiana.example.com.conf"
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name daiana.example.com;
+
+    # Redirect all HTTP traffic to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name daiana.example.com;
+
+    # SSL certificates (issued by Certbot / Let's Encrypt)
+    ssl_certificate     /etc/letsencrypt/live/daiana.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/daiana.example.com/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+
+        # Required for WebSocket upgrades (/room/{id})
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+
+        # Preserve client & protocol headers
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Keep long-lived WebSocket connections open
+        proxy_read_timeout 86400s;
+        proxy_send_timeout 86400s;
+    }
+}
+```
+
+3. Symlink the configuration into `sites-enabled`, test, and reload Nginx:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/daiana.example.com.conf /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+> **CORS Note:** If your browser-based **Akko** web viewer is served from a different domain (for example `https://akko.example.com`), enable CORS on Daiana (`ENABLE_CORS=true` and `CORS_ORIGINS=https://akko.example.com`).
+
+---
+
+## Connecting NookureStaff+
+
+Point NookureStaff+ to your self-hosted Daiana instance in `plugins/NookureStaff/config.yml`:
+
+```yaml title="config.yml"
+akko:
+  server-url: https://daiana.example.com
+  editor-url: https://akko.example.com/editor/{roomId}
+  telemetry-interval: 1
+```
+
+Verify the health endpoint from any terminal:
+
+```bash
+curl https://daiana.example.com/
+# {"ping":"pong","version":"0.1.0"}
+```
